@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>有氧消耗计算器</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <h1>🏃 有氧消耗计算器</h1>
+            <p class="subtitle">计算不同运动项目的热量消耗</p>
+            <nav class="nav-links">
+                <a href="../Plan/index.html">📋 减脂方案</a>
+                <a href="../Food/index.html">📊 饮食追踪</a>
+            </nav>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="main-content">
+            <!-- 左侧：计算器表单 -->
+            <section class="form-section">
+                <div class="card">
+                    <h2>📝 计算有氧消耗</h2>
+                    <form id="aerobicForm">
+                        <div class="form-group">
+                            <label for="weight">体重 (kg)</label>
+                            <input type="number" id="weight" placeholder="如：70" min="30" max="200" step="1" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="exerciseCategory">运动类型</label>
+                            <select id="exerciseCategory" required>
+                                <option value="">请选择运动类型</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="exerciseLevel">运动强度/速度</label>
+                            <select id="exerciseLevel" required disabled>
+                                <option value="">请先选择运动类型</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="duration">运动时长</label>
+                            <div class="duration-inputs">
+                                <input type="number" id="durationHours" placeholder="小时" min="0" max="24" value="0">
+                                <span>小时</span>
+                                <input type="number" id="durationMinutes" placeholder="分钟" min="0" max="59" value="30">
+                                <span>分钟</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="frequency">每周运动次数</label>
+                            <select id="frequency">
+                                <option value="1">1 次/周</option>
+                                <option value="2">2 次/周</option>
+                                <option value="3" selected>3 次/周</option>
+                                <option value="4">4 次/周</option>
+                                <option value="5">5 次/周</option>
+                                <option value="6">6 次/周</option>
+                                <option value="7">7 次/周</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">🔥 计算消耗</button>
+                    </form>
+                </div>
+
+                <!-- 计算结果 -->
+                <div class="card result-card" id="resultCard" style="display: none;">
+                    <h2>📊 计算结果</h2>
+                    
+                    <div class="result-main">
+                        <div class="result-highlight">
+                            <span class="label">单次运动消耗</span>
+                            <span class="value" id="singleCalories">-</span>
+                            <span class="unit">大卡</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">每小时消耗</span>
+                            <span class="value" id="hourlyCalories">-</span>
+                            <span class="unit">大卡</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">每周总消耗</span>
+                            <span class="value" id="weeklyCalories">-</span>
+                            <span class="unit">大卡</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">日均消耗</span>
+                            <span class="value" id="dailyAvgCalories">-</span>
+                            <span class="unit">大卡</span>
+                        </div>
+                        <div class="result-item highlight-box">
+                            <span class="label">📋 填入减脂方案的数值</span>
+                            <span class="value" id="planValue">-</span>
+                            <span class="unit">大卡/天</span>
+                        </div>
+                    </div>
+                    
+                    <div class="food-equivalent">
+                        <h3>🍽️ 相当于可以多吃</h3>
+                        <p class="hint">基于日均消耗计算</p>
+                        <div class="food-grid" id="foodEquivalent">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 右侧：使用说明 -->
+            <section class="manual-section">
+                <div class="card manual-card">
+                    <h2>📌 使用说明</h2>
+                    
+                    <div class="guide-section">
+                        <h3>🎯 表格的作用</h3>
+                        <div class="info-box recommend">
+                            <p><strong>场景一：</strong>你做饮食方案前就决定要做有氧，用来填写饮食方案表里的"有氧消耗"一栏数字</p>
+                        </div>
+                        <div class="info-box tip">
+                            <p><strong>场景二：</strong>你原本做的无有氧饮食方案，但因为吃起来太饿，需要加有氧来增加饮食热量</p>
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <h3>📐 计算方法</h3>
+                        <div class="formula-box">
+                            <p><strong>填入减脂方案的数值 =</strong></p>
+                            <p>每小时热量消耗 × 每次时长(小时) × 每周次数 ÷ 7天</p>
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <h3>🍎 热量换算参考</h3>
+                        <p>每增加有氧消耗 <strong>100大卡</strong>，约等于能多吃：</p>
+                        <ul class="check-list">
+                            <li>80g 熟米饭</li>
+                            <li>80g 瘦熟肉</li>
+                            <li>1个苹果/香蕉/柑橘</li>
+                            <li>1.5个鸡蛋</li>
+                            <li>大半盒全脂牛奶</li>
+                            <li>20g 坚果</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card manual-card">
+                    <h2>⚠️ 注意事项</h2>
+                    <div class="warning-list">
+                        <div class="warning-item">
+                            <span class="icon">⏱️</span>
+                            <p>休息时间不要计入运动时长（适用于游泳、球类、跳操等）</p>
+                        </div>
+                        <div class="warning-item">
+                            <span class="icon">📊</span>
+                            <p>大体重者（>80kg）的消耗已做递减修正，避免高估</p>
+                        </div>
+                        <div class="warning-item">
+                            <span class="icon">🎯</span>
+                            <p>数据来源于权威文献，但个体差异可能导致实际消耗有所不同</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card manual-card">
+                    <h2>📚 数据来源</h2>
+                    <div class="source-list">
+                        <p><strong>游泳：</strong>Understanding Nutrition (16th edition), pp.236</p>
+                        <p><strong>骑行、单车、划船机等：</strong>2011 Compendium of Physical Activities, Medicine & Science in Sports & Exercise</p>
+                        <p><strong>其他运动：</strong>《中国健康成年人身体活动能量消耗参考值》，《中国运动医学杂志》2022年第5期</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 完整消耗表格 -->
+        <section class="full-table-section">
+            <div class="card">
+                <h2>📋 完整有氧消耗表格</h2>
+                <p class="table-hint">以下为每小时热量消耗（大卡），根据体重查表</p>
+                <div class="table-wrapper">
+                    <table id="fullTable">
+                        <thead>
+                            <tr>
+                                <th>运动项目</th>
+                                <th>强度/速度</th>
+                                <th>每kg消耗</th>
+                                <th>50kg</th>
+                                <th>55kg</th>
+                                <th>60kg</th>
+                                <th>65kg</th>
+                                <th>70kg</th>
+                                <th>75kg</th>
+                                <th>80kg</th>
+                                <th>85kg</th>
+                                <th>90kg</th>
+                                <th>95kg</th>
+                                <th>100kg</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>📚 参考资料：B站好人松松 健身Excel超级套表</p>
+            <p>⚠️ 本工具仅供参考，实际消耗因人而异</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

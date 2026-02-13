@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>饮食追踪 - HowToFitness</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🍎 饮食追踪</h1>
+            <p class="subtitle">记录每日饮食，追踪健康目标</p>
+            <nav class="nav-links">
+                <a href="../Plan/index.html">📋 减脂方案</a>
+                <a href="../Aerobic/index.html">🏃 有氧消耗</a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <!-- Chat Input Section -->
+            <section class="chat-section">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message system-message">
+                            <p>👋 欢迎使用饮食追踪！</p>
+                            <p>您可以输入以下内容：</p>
+                            <ul>
+                                <li>📝 食物记录：<code>鸡胸肉 150g</code></li>
+                                <li>⚖️ 体重记录：<code>体重 70.5</code></li>
+                                <li>🏋️ 设置日期类型：<code>力训日</code> 或 <code>休息日</code></li>
+                                <li>📊 查看今日汇总：<code>汇总</code></li>
+                                <li>🗑️ 清除聊天记录：<code>清除记录</code></li>
+                            </ul>
+                            <p>💡 <strong>AI 增强：</strong>您也可以自然语言输入，如"早上吃了两个鸡蛋"，AI 会自动解析！</p>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" class="chat-input" placeholder="输入食物名称和克数，例如：鸡胸肉 150g" autocomplete="off">
+                        <button id="sendBtn" class="send-btn">发送</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Daily Summary Section -->
+            <section class="summary-section">
+                <div class="summary-header">
+                    <h2>📅 今日汇总</h2>
+                    <div class="date-selector">
+                        <input type="date" id="dateSelector" class="date-input">
+                        <select id="dayType" class="day-type-select">
+                            <option value="training">力训日</option>
+                            <option value="rest">休息日</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="summary-cards">
+                    <div class="summary-card calories">
+                        <span class="card-icon">🔥</span>
+                        <span class="card-value" id="totalCalories">0</span>
+                        <span class="card-label">千卡</span>
+                    </div>
+                    <div class="summary-card protein">
+                        <span class="card-icon">🥩</span>
+                        <span class="card-value" id="totalProtein">0</span>
+                        <span class="card-label">蛋白质(g)</span>
+                    </div>
+                    <div class="summary-card carbs">
+                        <span class="card-icon">🍚</span>
+                        <span class="card-value" id="totalCarbs">0</span>
+                        <span class="card-label">碳水(g)</span>
+                    </div>
+                    <div class="summary-card fat">
+                        <span class="card-icon">🥑</span>
+                        <span class="card-value" id="totalFat">0</span>
+                        <span class="card-label">脂肪(g)</span>
+                    </div>
+                </div>
+                
+                <!-- Today's Food List -->
+                <div class="food-list-container">
+                    <h3>今日食物列表</h3>
+                    <div class="food-list" id="foodList">
+                        <p class="empty-message">暂无记录</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-container">
+                    <h3>🏋️ 力训日营养摄入</h3>
+                    <canvas id="trainingDayChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>😴 休息日营养摄入</h3>
+                    <canvas id="restDayChart"></canvas>
+                </div>
+                <div class="chart-container full-width">
+                    <h3>⚖️ 体重变化趋势</h3>
+                    <canvas id="weightChart"></canvas>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>HowToFitness - 健康生活从记录开始</p>
+        </footer>
+    </div>
+
+    <script src="foodDatabase.js"></script>
+    <script src="storage.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
