@@ -29,5 +29,6 @@
 .stat-chart-label { display: block; font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
 .stat-chart-big { font-size: 2.2rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; }
 .stat-chart-unit { font-size: 1rem; font-weight: 500; color: var(--text-muted); }
+.stat-chart-sub { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 
 .card canvas { width: 100% !important; border-radius: var(--radius-xs); }

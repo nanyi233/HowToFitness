@@ -23,6 +23,7 @@ const cssFiles = [
     'shared/styles/layout.css',
     'shared/styles/components.css',
     'modules/food/food.css',
+    'modules/training/training.css',
     'modules/aerobic/aerobic.css',
     'modules/plan/plan.css',
     'modules/stats/stats.css',
@@ -38,6 +39,7 @@ const jsFiles = [
     'shared/js/utils.js',
     'modules/food/food-database.js',
     'modules/food/food.js',
+    'modules/training/training.js',
     'modules/stats/stats.js',
     'modules/profile/profile.js',
     'modules/aerobic/aerobic.js',
@@ -46,9 +48,10 @@ const jsFiles = [
 const allJS = jsFiles.map(function(f) { return '// === ' + f + ' ===\n' + read(f); }).join('\n\n');
 
 // ============== Collect module HTML templates ==============
-const moduleNames = ['food', 'aerobic', 'plan', 'stats', 'profile'];
+const moduleNames = ['food', 'training', 'aerobic', 'plan', 'stats', 'profile'];
 const moduleHtmlPaths = {
     food: 'modules/food/food.html',
+    training: 'modules/training/training.html',
     aerobic: 'modules/aerobic/aerobic.html',
     plan: 'modules/plan/plan.html',
     stats: 'modules/stats/stats.html',
@@ -70,11 +73,12 @@ var bootstrapJS = [
     '        pageContainer: null,',
     '',
     '        modules: {',
-    '            food:    { tpl: "tpl-food",    instance: window.FoodModule },',
-    '            aerobic: { tpl: "tpl-aerobic", instance: window.AerobicModule },',
-    '            plan:    { tpl: "tpl-plan",    instance: window.PlanModule },',
-    '            stats:   { tpl: "tpl-stats",   instance: window.StatsModule },',
-    '            profile: { tpl: "tpl-profile", instance: window.ProfileModule }',
+    '            food:     { tpl: "tpl-food",     instance: window.FoodModule },',
+    '            training: { tpl: "tpl-training", instance: window.TrainingModule },',
+    '            aerobic:  { tpl: "tpl-aerobic",  instance: window.AerobicModule },',
+    '            plan:     { tpl: "tpl-plan",     instance: window.PlanModule },',
+    '            stats:    { tpl: "tpl-stats",    instance: window.StatsModule },',
+    '            profile:  { tpl: "tpl-profile",  instance: window.ProfileModule }',
     '        },',
     '',
     '        init: function() {',
@@ -166,6 +170,10 @@ parts.push('        <nav class="tab-bar">');
 parts.push('            <button class="tab-bar-item active" data-module="food">');
 parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>');
 parts.push('                <span>Diet</span>');
+parts.push('            </button>');
+parts.push('            <button class="tab-bar-item" data-module="training">');
+parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 2v4"/><path d="M12 18v4"/><rect x="2" y="6" width="4" height="12" rx="1"/><rect x="18" y="6" width="4" height="12" rx="1"/></svg>');
+parts.push('                <span>Train</span>');
 parts.push('            </button>');
 parts.push('            <button class="tab-bar-item" data-module="aerobic">');
 parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><path d="m6.5 8 3.5 2v4l-3 5"/><path d="m17.5 8-3.5 2v4l3 5"/></svg>');

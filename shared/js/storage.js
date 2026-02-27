@@ -10,7 +10,9 @@ const Storage = {
         CHAT_HISTORY: 'htf_chat_history',
         PLAN_DATA: 'htf_plan_data',
         AEROBIC_DATA: 'htf_aerobic_data',
-        USER_PROFILE: 'htf_user_profile'
+        USER_PROFILE: 'htf_user_profile',
+        TRAINING_RECORDS: 'htf_training_records',
+        TRAINING_CHAT_HISTORY: 'htf_training_chat_history'
     },
 
     // ==================== Initialization ====================
@@ -29,6 +31,12 @@ const Storage = {
         }
         if (!localStorage.getItem(this.KEYS.CHAT_HISTORY)) {
             localStorage.setItem(this.KEYS.CHAT_HISTORY, JSON.stringify([]));
+        }
+        if (!localStorage.getItem(this.KEYS.TRAINING_RECORDS)) {
+            localStorage.setItem(this.KEYS.TRAINING_RECORDS, JSON.stringify({}));
+        }
+        if (!localStorage.getItem(this.KEYS.TRAINING_CHAT_HISTORY)) {
+            localStorage.setItem(this.KEYS.TRAINING_CHAT_HISTORY, JSON.stringify([]));
         }
     },
 
@@ -208,6 +216,124 @@ const Storage = {
         localStorage.setItem(this.KEYS.CHAT_HISTORY, JSON.stringify([]));
     },
 
+    // ==================== Training Records ====================
+
+    getTrainingRecords() {
+        try {
+            return JSON.parse(localStorage.getItem(this.KEYS.TRAINING_RECORDS)) || {};
+        } catch (e) {
+            console.error('Error reading training records:', e);
+            return {};
+        }
+    },
+
+    getTrainingByDate(date) {
+        const records = this.getTrainingRecords();
+        return records[date] || {
+            date: date,
+            exercises: [],
+            duration: null
+        };
+    },
+
+    saveTrainingRecord(date, data) {
+        const records = this.getTrainingRecords();
+        records[date] = {
+            ...data,
+            date: date,
+            updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(this.KEYS.TRAINING_RECORDS, JSON.stringify(records));
+    },
+
+    addTrainingExercise(date, exercise) {
+        const record = this.getTrainingByDate(date);
+        exercise.id = Date.now().toString() + Math.random().toString(36).substr(2, 4);
+        exercise.addedAt = new Date().toISOString();
+        record.exercises.push(exercise);
+        this.saveTrainingRecord(date, record);
+        window.EventBus && EventBus.emit('training:added', { date, exercise });
+        return exercise;
+    },
+
+    removeTrainingExercise(date, exerciseId) {
+        const record = this.getTrainingByDate(date);
+        record.exercises = record.exercises.filter(e => e.id !== exerciseId);
+        this.saveTrainingRecord(date, record);
+        window.EventBus && EventBus.emit('training:removed', { date, exerciseId });
+    },
+
+    setTrainingDuration(date, minutes) {
+        const record = this.getTrainingByDate(date);
+        record.duration = minutes;
+        this.saveTrainingRecord(date, record);
+    },
+
+    /**
+     * Get recent training records sorted by date
+     * @param {number} limit - Max number of records to return
+     * @returns {Array} - Array of { date, exercises, duration, totalVolume, totalSets, maxIntensity }
+     */
+    getRecentTrainingRecords(limit = 30) {
+        const records = this.getTrainingRecords();
+        return Object.values(records)
+            .filter(r => r.exercises && r.exercises.length > 0)
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(-limit)
+            .map(r => {
+                let totalVolume = 0;
+                let totalSets = 0;
+                let maxWeight = 0;
+                r.exercises.forEach(ex => {
+                    totalVolume += ex.volume || 0;
+                    totalSets += ex.sets || 0;
+                    if (ex.weight > maxWeight) maxWeight = ex.weight;
+                });
+                return {
+                    date: r.date,
+                    exercises: r.exercises,
+                    exerciseCount: r.exercises.length,
+                    duration: r.duration || 0,
+                    totalVolume: totalVolume,
+                    totalSets: totalSets,
+                    maxIntensity: maxWeight
+                };
+            });
+    },
+
+    // ==================== Training Chat History ====================
+
+    getTrainingChatHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(this.KEYS.TRAINING_CHAT_HISTORY)) || [];
+        } catch (e) {
+            return [];
+        }
+    },
+
+    addTrainingChatMessage(message) {
+        const history = this.getTrainingChatHistory();
+        const chatMessage = {
+            id: Date.now().toString(),
+            content: message.content,
+            type: message.type,
+            status: message.status || '',
+            timestamp: new Date().toISOString()
+        };
+        history.push(chatMessage);
+        if (history.length > 100) history.splice(0, history.length - 100);
+        localStorage.setItem(this.KEYS.TRAINING_CHAT_HISTORY, JSON.stringify(history));
+        return chatMessage;
+    },
+
+    getRecentTrainingChatHistory(limit = 50) {
+        return this.getTrainingChatHistory().slice(-limit);
+    },
+
+    clearTrainingChatHistory() {
+        localStorage.setItem(this.KEYS.TRAINING_CHAT_HISTORY, JSON.stringify([]));
+    },
+
     // ==================== Plan Data ====================
 
     getPlanData() {
@@ -260,6 +386,7 @@ const Storage = {
             planData: this.getPlanData(),
             aerobicData: this.getAerobicData(),
             userProfile: this.getUserProfile(),
+            trainingRecords: this.getTrainingRecords(),
             exportedAt: new Date().toISOString()
         };
     },
@@ -270,6 +397,7 @@ const Storage = {
         if (data.planData) localStorage.setItem(this.KEYS.PLAN_DATA, JSON.stringify(data.planData));
         if (data.aerobicData) localStorage.setItem(this.KEYS.AEROBIC_DATA, JSON.stringify(data.aerobicData));
         if (data.userProfile) localStorage.setItem(this.KEYS.USER_PROFILE, JSON.stringify(data.userProfile));
+        if (data.trainingRecords) localStorage.setItem(this.KEYS.TRAINING_RECORDS, JSON.stringify(data.trainingRecords));
     },
 
     clearAll() {
