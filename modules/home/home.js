@@ -58,17 +58,7 @@ const HomeModule = {
     },
 
     updateQuickStats() {
-        const dietData = Storage.getDietByDate(this.currentDate);
-        const trainingData = Storage.getTrainingByDate(this.currentDate);
-
-        const calEl = document.getElementById('homeCalories');
-        if (calEl) calEl.textContent = dietData.totals.calories || 0;
-
-        const proteinEl = document.getElementById('homeProtein');
-        if (proteinEl) proteinEl.textContent = dietData.totals.protein || 0;
-
-        const exEl = document.getElementById('homeExercises');
-        if (exEl) exEl.textContent = (trainingData.exercises || []).length;
+        // Quick Stats section removed — kept as no-op to avoid call-site errors
     },
 
     // ==================== Smart Input Detection ====================

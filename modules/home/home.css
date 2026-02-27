@@ -7,49 +7,7 @@
     align-items: flex-start;
 }
 
-/* ======================== QUICK STATS ======================== */
-.home-quick-stats {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-}
 
-.quick-stat-item {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 12px;
-    box-shadow: var(--shadow-sm);
-}
-
-.quick-stat-icon {
-    font-size: 1.4rem;
-    flex-shrink: 0;
-}
-
-.quick-stat-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.quick-stat-value {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    line-height: 1.2;
-}
-
-.quick-stat-label {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
 
 /* ======================== CHAT SECTION ======================== */
 .chat-section {
@@ -57,12 +15,16 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
     overflow: hidden;
-    margin-bottom: 16px;
+    margin-bottom: 0;
     border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    /* Fill remaining height: viewport - header - tab bar - page padding */
+    height: calc(100vh - 60px - 56px - 32px);
 }
 
 .chat-messages {
-    max-height: 400px;
+    flex: 1;
     overflow-y: auto;
     padding: 14px;
     display: flex;
