@@ -424,10 +424,60 @@ const FoodModule = {
         if (chartType === 'training') {
             trainingCard?.classList.remove('hidden');
             restCard?.classList.add('hidden');
+            if (this.charts.training) {
+                requestAnimationFrame(() => this.charts.training.resize());
+            }
         } else {
             trainingCard?.classList.add('hidden');
             restCard?.classList.remove('hidden');
+            // Lazy-init rest chart on first toggle
+            if (!this.charts.rest) {
+                this._createRestChart();
+                this._updateRestChartData();
+            }
+            requestAnimationFrame(() => {
+                if (this.charts.rest) this.charts.rest.resize();
+            });
         }
+    },
+
+    _getChartConfig() {
+        return {
+            tooltip: {
+                backgroundColor: '#fff', titleColor: '#1a2332', bodyColor: '#6b7b8d',
+                borderColor: '#e8ecf0', borderWidth: 1, cornerRadius: 8, padding: 10
+            },
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            datasets: [
+                { label: '蛋白质 (g)', data: [], backgroundColor: 'rgba(46,204,113,0.7)', borderColor: '#2ecc71', borderWidth: 1, borderRadius: 6 },
+                { label: '碳水 (g)', data: [], backgroundColor: 'rgba(243,156,18,0.7)', borderColor: '#f39c12', borderWidth: 1, borderRadius: 6 },
+                { label: '脂肪 (g)', data: [], backgroundColor: 'rgba(231,76,60,0.6)', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 6 }
+            ]
+        };
+    },
+
+    _createBarChart(canvasId) {
+        const ctx = document.getElementById(canvasId)?.getContext('2d');
+        if (!ctx) return null;
+        const cfg = this._getChartConfig();
+        return new Chart(ctx, {
+            type: 'bar',
+            data: { labels: [], datasets: JSON.parse(JSON.stringify(cfg.datasets)) },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                animation: { duration: 300 },
+                scales: { x: { grid: cfg.grid }, y: { beginAtZero: true, grid: cfg.grid } },
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#6b7b8d', usePointStyle: true, pointStyle: 'circle' } },
+                    tooltip: cfg.tooltip
+                }
+            }
+        });
+    },
+
+    _createRestChart() {
+        this.charts.rest = this._createBarChart('foodRestDayChart');
     },
 
     initCharts() {
@@ -435,43 +485,24 @@ const FoodModule = {
         Chart.defaults.borderColor = '#e8ecf0';
         Chart.defaults.font.family = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
-        const chartTooltip = {
-            backgroundColor: '#fff', titleColor: '#1a2332', bodyColor: '#6b7b8d',
-            borderColor: '#e8ecf0', borderWidth: 1, cornerRadius: 8, padding: 10
-        };
-        const gridOpts = { color: 'rgba(0,0,0,0.04)' };
+        // Only init training chart eagerly (it's visible by default)
+        this.charts.training = this._createBarChart('foodTrainingDayChart');
+        // Rest chart is lazy-initialized on first toggle
+        this.charts.rest = null;
+    },
 
-        // Training day nutrition chart
-        const trainingCtx = document.getElementById('foodTrainingDayChart')?.getContext('2d');
-        if (trainingCtx) {
-            this.charts.training = new Chart(trainingCtx, {
-                type: 'bar',
-                data: { labels: [], datasets: [
-                    { label: '蛋白质 (g)', data: [], backgroundColor: 'rgba(46,204,113,0.7)', borderColor: '#2ecc71', borderWidth: 1, borderRadius: 6 },
-                    { label: '碳水 (g)', data: [], backgroundColor: 'rgba(243,156,18,0.7)', borderColor: '#f39c12', borderWidth: 1, borderRadius: 6 },
-                    { label: '脂肪 (g)', data: [], backgroundColor: 'rgba(231,76,60,0.6)', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 6 }
-                ]},
-                options: { responsive: true, maintainAspectRatio: true, scales: { x: { grid: gridOpts }, y: { beginAtZero: true, grid: gridOpts } }, plugins: { legend: { position: 'top', labels: { color: '#6b7b8d', usePointStyle: true, pointStyle: 'circle' } }, tooltip: chartTooltip } }
-            });
-        }
-
-        // Rest day nutrition chart
-        const restCtx = document.getElementById('foodRestDayChart')?.getContext('2d');
-        if (restCtx) {
-            this.charts.rest = new Chart(restCtx, {
-                type: 'bar',
-                data: { labels: [], datasets: [
-                    { label: '蛋白质 (g)', data: [], backgroundColor: 'rgba(46,204,113,0.7)', borderColor: '#2ecc71', borderWidth: 1, borderRadius: 6 },
-                    { label: '碳水 (g)', data: [], backgroundColor: 'rgba(243,156,18,0.7)', borderColor: '#f39c12', borderWidth: 1, borderRadius: 6 },
-                    { label: '脂肪 (g)', data: [], backgroundColor: 'rgba(231,76,60,0.6)', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 6 }
-                ]},
-                options: { responsive: true, maintainAspectRatio: true, scales: { x: { grid: gridOpts }, y: { beginAtZero: true, grid: gridOpts } }, plugins: { legend: { position: 'top', labels: { color: '#6b7b8d', usePointStyle: true, pointStyle: 'circle' } }, tooltip: chartTooltip } }
-            });
-        }
+    _updateRestChartData() {
+        if (!this.charts.rest) return;
+        const restRecords = Storage.getRecentDietRecords('rest', 7);
+        this.charts.rest.data.labels = restRecords.map(r => r.date.slice(5));
+        this.charts.rest.data.datasets[0].data = restRecords.map(r => r.totals.protein);
+        this.charts.rest.data.datasets[1].data = restRecords.map(r => r.totals.carbs);
+        this.charts.rest.data.datasets[2].data = restRecords.map(r => r.totals.fat);
+        this.charts.rest.update();
     },
 
     updateCharts() {
-        // Training day chart
+        // Training day chart (always visible)
         if (this.charts.training) {
             const trainingRecords = Storage.getRecentDietRecords('training', 7);
             this.charts.training.data.labels = trainingRecords.map(r => r.date.slice(5));
@@ -481,15 +512,8 @@ const FoodModule = {
             this.charts.training.update();
         }
 
-        // Rest day chart
-        if (this.charts.rest) {
-            const restRecords = Storage.getRecentDietRecords('rest', 7);
-            this.charts.rest.data.labels = restRecords.map(r => r.date.slice(5));
-            this.charts.rest.data.datasets[0].data = restRecords.map(r => r.totals.protein);
-            this.charts.rest.data.datasets[1].data = restRecords.map(r => r.totals.carbs);
-            this.charts.rest.data.datasets[2].data = restRecords.map(r => r.totals.fat);
-            this.charts.rest.update();
-        }
+        // Rest day chart — only update if already initialized
+        this._updateRestChartData();
     }
 };
 

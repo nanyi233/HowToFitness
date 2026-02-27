@@ -493,10 +493,61 @@ const TrainingModule = {
         if (chartType === 'intensity') {
             intensityCard?.classList.remove('hidden');
             volumeCard?.classList.add('hidden');
+            if (this.charts.intensity) {
+                requestAnimationFrame(() => this.charts.intensity.resize());
+            }
         } else {
             intensityCard?.classList.add('hidden');
             volumeCard?.classList.remove('hidden');
+            // Lazy-init volume chart on first toggle
+            if (!this.charts.volume) {
+                this._createVolumeChart();
+                this._updateVolumeChartData();
+            }
+            requestAnimationFrame(() => {
+                if (this.charts.volume) this.charts.volume.resize();
+            });
         }
+    },
+
+    _getChartOptions() {
+        return {
+            tooltip: {
+                backgroundColor: '#fff', titleColor: '#1a2332', bodyColor: '#6b7b8d',
+                borderColor: '#e8ecf0', borderWidth: 1, cornerRadius: 8, padding: 10
+            },
+            grid: { color: 'rgba(0,0,0,0.04)' }
+        };
+    },
+
+    _createVolumeChart() {
+        const opts = this._getChartOptions();
+        const volumeCtx = document.getElementById('trainingVolumeChart')?.getContext('2d');
+        if (!volumeCtx) return;
+        this.charts.volume = new Chart(volumeCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '训练容量 (kg)',
+                    data: [],
+                    backgroundColor: 'rgba(155,89,182,0.7)',
+                    borderColor: '#9b59b6',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                animation: { duration: 300 },
+                scales: {
+                    x: { grid: opts.grid, title: { display: true, text: '日期', color: '#6b7b8d', font: { size: 11 } } },
+                    y: { beginAtZero: true, grid: opts.grid, title: { display: true, text: '训练容量 (kg)', color: '#9b59b6', font: { size: 11 } } }
+                },
+                plugins: { legend: { display: false }, tooltip: opts.tooltip }
+            }
+        });
     },
 
     initCharts() {
@@ -504,13 +555,9 @@ const TrainingModule = {
         Chart.defaults.borderColor = '#e8ecf0';
         Chart.defaults.font.family = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
-        const chartTooltip = {
-            backgroundColor: '#fff', titleColor: '#1a2332', bodyColor: '#6b7b8d',
-            borderColor: '#e8ecf0', borderWidth: 1, cornerRadius: 8, padding: 10
-        };
-        const gridOpts = { color: 'rgba(0,0,0,0.04)' };
+        const opts = this._getChartOptions();
 
-        // Training Intensity chart (line chart)
+        // Only init intensity chart eagerly (it's visible by default)
         const intensityCtx = document.getElementById('trainingIntensityChart')?.getContext('2d');
         if (intensityCtx) {
             this.charts.intensity = new Chart(intensityCtx, {
@@ -535,46 +582,30 @@ const TrainingModule = {
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    animation: { duration: 300 },
                     scales: {
-                        x: { grid: gridOpts, title: { display: true, text: '日期', color: '#6b7b8d', font: { size: 11 } } },
-                        y: { beginAtZero: false, grid: gridOpts, title: { display: true, text: '最大重量 (kg)', color: '#e74c3c', font: { size: 11 } } }
+                        x: { grid: opts.grid, title: { display: true, text: '日期', color: '#6b7b8d', font: { size: 11 } } },
+                        y: { beginAtZero: false, grid: opts.grid, title: { display: true, text: '最大重量 (kg)', color: '#e74c3c', font: { size: 11 } } }
                     },
-                    plugins: { legend: { display: false }, tooltip: chartTooltip }
+                    plugins: { legend: { display: false }, tooltip: opts.tooltip }
                 }
             });
         }
 
-        // Training Volume chart (bar chart)
-        const volumeCtx = document.getElementById('trainingVolumeChart')?.getContext('2d');
-        if (volumeCtx) {
-            this.charts.volume = new Chart(volumeCtx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: '训练容量 (kg)',
-                        data: [],
-                        backgroundColor: 'rgba(155,89,182,0.7)',
-                        borderColor: '#9b59b6',
-                        borderWidth: 1,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales: {
-                        x: { grid: gridOpts, title: { display: true, text: '日期', color: '#6b7b8d', font: { size: 11 } } },
-                        y: { beginAtZero: true, grid: gridOpts, title: { display: true, text: '训练容量 (kg)', color: '#9b59b6', font: { size: 11 } } }
-                    },
-                    plugins: { legend: { display: false }, tooltip: chartTooltip }
-                }
-            });
-        }
+        // Volume chart is lazy-initialized on first toggle
+        this.charts.volume = null;
+    },
+
+    _updateVolumeChartData() {
+        if (!this.charts.volume) return;
+        const trainingData = Storage.getRecentTrainingRecords(14);
+        this.charts.volume.data.labels = trainingData.map(r => r.date.slice(5));
+        this.charts.volume.data.datasets[0].data = trainingData.map(r => r.totalVolume || 0);
+        this.charts.volume.update();
     },
 
     updateCharts() {
-        // Training Intensity chart
+        // Training Intensity chart (always visible)
         if (this.charts.intensity) {
             const trainingData = Storage.getRecentTrainingRecords(14);
             this.charts.intensity.data.labels = trainingData.map(r => r.date.slice(5));
@@ -582,13 +613,8 @@ const TrainingModule = {
             this.charts.intensity.update();
         }
 
-        // Training Volume chart
-        if (this.charts.volume) {
-            const trainingData2 = Storage.getRecentTrainingRecords(14);
-            this.charts.volume.data.labels = trainingData2.map(r => r.date.slice(5));
-            this.charts.volume.data.datasets[0].data = trainingData2.map(r => r.totalVolume || 0);
-            this.charts.volume.update();
-        }
+        // Volume chart — only update if already initialized
+        this._updateVolumeChartData();
     }
 };
 
