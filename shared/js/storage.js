@@ -248,12 +248,48 @@ const Storage = {
 
     addTrainingExercise(date, exercise) {
         const record = this.getTrainingByDate(date);
-        exercise.id = Date.now().toString() + Math.random().toString(36).substr(2, 4);
-        exercise.addedAt = new Date().toISOString();
-        record.exercises.push(exercise);
-        this.saveTrainingRecord(date, record);
-        window.EventBus && EventBus.emit('training:added', { date, exercise });
-        return exercise;
+
+        // Check if same exercise name already exists (case-insensitive, trim)
+        const normalizedName = exercise.name.trim().toLowerCase();
+        const existing = record.exercises.find(
+            e => e.name.trim().toLowerCase() === normalizedName
+        );
+
+        if (existing) {
+            // Merge: append new setDetails to existing exercise
+            const newSetDetails = exercise.setDetails || this._generateSetDetails(exercise.weight, exercise.sets, exercise.reps);
+            existing.setDetails = (existing.setDetails || []).concat(newSetDetails);
+            existing.sets = existing.setDetails.length;
+            // Recalculate weight as max weight across all sets
+            existing.weight = Math.max(...existing.setDetails.map(s => s.weight || 0));
+            // Recalculate reps as the most common rep count (for display)
+            existing.reps = newSetDetails.length > 0 ? newSetDetails[0].reps : existing.reps;
+            // Recalculate volume: sum of (weight × reps) for each set
+            existing.volume = existing.setDetails.reduce((sum, s) => sum + (s.weight || 0) * (s.reps || 0), 0);
+            existing.updatedAt = new Date().toISOString();
+            this.saveTrainingRecord(date, record);
+            window.EventBus && EventBus.emit('training:updated', { date, exercise: existing });
+            return existing;
+        } else {
+            // New exercise
+            exercise.id = Date.now().toString() + Math.random().toString(36).substr(2, 4);
+            exercise.addedAt = new Date().toISOString();
+            if (!exercise.setDetails || exercise.setDetails.length === 0) {
+                exercise.setDetails = this._generateSetDetails(exercise.weight, exercise.sets, exercise.reps);
+            }
+            record.exercises.push(exercise);
+            this.saveTrainingRecord(date, record);
+            window.EventBus && EventBus.emit('training:added', { date, exercise });
+            return exercise;
+        }
+    },
+
+    _generateSetDetails(weight, sets, reps) {
+        const details = [];
+        for (let i = 0; i < sets; i++) {
+            details.push({ weight: weight, reps: reps });
+        }
+        return details;
     },
 
     removeTrainingExercise(date, exerciseId) {

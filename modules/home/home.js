@@ -322,6 +322,10 @@ const HomeModule = {
             Storage.setTrainingDuration(this.currentDate, result.duration);
         }
 
+        // Pre-fetch day data for merge detection
+        const dayData = Storage.getTrainingByDate(this.currentDate);
+        const existingNames = new Set(dayData.exercises.map(e => e.name.trim().toLowerCase()));
+
         let parts = [];
         exercises.forEach(ex => {
             const volume = ex.weight * ex.sets * ex.reps;
@@ -333,9 +337,17 @@ const HomeModule = {
                 volume: volume,
                 setDetails: ex.set_details || this.generateSetDetails(ex.weight, ex.sets, ex.reps)
             };
-            Storage.addTrainingExercise(this.currentDate, exercise);
+            const wasMerged = existingNames.has(ex.name.trim().toLowerCase());
+            const saved = Storage.addTrainingExercise(this.currentDate, exercise);
+            // After first add, this name now exists for subsequent items
+            existingNames.add(ex.name.trim().toLowerCase());
+
             const w = ex.weight > 0 ? `${ex.weight}kg` : '自重';
-            parts.push(`• <strong>${ex.name}</strong> ${w} ${ex.sets}组×${ex.reps}次 (${volume}kg)`);
+            if (wasMerged) {
+                parts.push(`• <strong>${ex.name}</strong> ${w} +${ex.sets}组 → 共${saved.sets}组 (${saved.volume}kg)`);
+            } else {
+                parts.push(`• <strong>${ex.name}</strong> ${w} ${ex.sets}组×${ex.reps}次 (${volume}kg)`);
+            }
         });
 
         this.updateQuickStats();
@@ -541,15 +553,29 @@ const HomeModule = {
             setDetails: parsed.setDetails || []
         };
 
-        Storage.addTrainingExercise(this.currentDate, exercise);
+        // Check if this exercise already exists today (merge detection)
+        const dayData = Storage.getTrainingByDate(this.currentDate);
+        const normalizedName = parsed.name.trim().toLowerCase();
+        const existsBefore = dayData.exercises.some(e => e.name.trim().toLowerCase() === normalizedName);
+
+        const result = Storage.addTrainingExercise(this.currentDate, exercise);
         this.updateQuickStats();
 
         const weightStr = parsed.weight > 0 ? `${parsed.weight}kg` : '自重';
-        this.addMessage(
-            `✅ 🏋️ 已添加：<strong>${parsed.name}</strong><br>` +
-            `🏋️ ${weightStr} · ${parsed.sets}组×${parsed.reps}次 · 容量 ${volume}kg`,
-            'bot', 'success'
-        );
+        if (existsBefore) {
+            // Merged into existing exercise
+            this.addMessage(
+                `✅ 🏋️ 已合并到：<strong>${parsed.name}</strong><br>` +
+                `➕ 新增 ${parsed.sets}组 (${weightStr}×${parsed.reps}) · 当前共 ${result.sets}组 · 总容量 ${result.volume}kg`,
+                'bot', 'success'
+            );
+        } else {
+            this.addMessage(
+                `✅ 🏋️ 已添加：<strong>${parsed.name}</strong><br>` +
+                `🏋️ ${weightStr} · ${parsed.sets}组×${parsed.reps}次 · 容量 ${volume}kg`,
+                'bot', 'success'
+            );
+        }
     },
 
     async handleAITrainingInput(message) {

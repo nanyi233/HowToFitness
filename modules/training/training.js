@@ -103,13 +103,19 @@ const TrainingModule = {
 
             const volumePercent = maxVolume > 0 ? Math.round((ex.volume / maxVolume) * 100) : 0;
 
+            // Show weight range if sets have different weights
+            const weights = ex.setDetails ? [...new Set(ex.setDetails.map(s => s.weight))] : [ex.weight];
+            const weightDisplay = weights.length > 1
+                ? `${Math.min(...weights)}-${Math.max(...weights)}kg`
+                : `${ex.weight}kg`;
+
             return `
                 <div class="exercise-item fade-in" data-id="${ex.id}">
                     <div class="exercise-item-icon">🏋️</div>
                     <div class="exercise-item-info">
                         <div class="exercise-item-name">${ex.name}</div>
                         <div class="exercise-item-details">
-                            ${ex.sets}组 · ${ex.weight}kg · 容量 ${ex.volume}kg
+                            ${ex.sets}组 · ${weightDisplay} · 容量 ${ex.volume}kg
                         </div>
                         <div class="exercise-sets">${setsHtml}</div>
                         <div class="volume-bar">
@@ -275,15 +281,28 @@ const TrainingModule = {
             setDetails: parsed.setDetails || []
         };
 
-        Storage.addTrainingExercise(this.currentDate, exercise);
+        // Check if this exercise already exists today (merge detection)
+        const dayData = Storage.getTrainingByDate(this.currentDate);
+        const normalizedName = parsed.name.trim().toLowerCase();
+        const existsBefore = dayData.exercises.some(e => e.name.trim().toLowerCase() === normalizedName);
+
+        const result = Storage.addTrainingExercise(this.currentDate, exercise);
         this.loadDayData();
 
         const weightStr = parsed.weight > 0 ? `${parsed.weight}kg` : '自重';
-        this.addMessage(
-            `✅ 已添加：<strong>${parsed.name}</strong><br>` +
-            `🏋️ ${weightStr} · ${parsed.sets}组×${parsed.reps}次 · 容量 ${volume}kg`,
-            'bot', 'success'
-        );
+        if (existsBefore) {
+            this.addMessage(
+                `✅ 已合并到：<strong>${parsed.name}</strong><br>` +
+                `➕ 新增 ${parsed.sets}组 (${weightStr}×${parsed.reps}) · 当前共 ${result.sets}组 · 总容量 ${result.volume}kg`,
+                'bot', 'success'
+            );
+        } else {
+            this.addMessage(
+                `✅ 已添加：<strong>${parsed.name}</strong><br>` +
+                `🏋️ ${weightStr} · ${parsed.sets}组×${parsed.reps}次 · 容量 ${volume}kg`,
+                'bot', 'success'
+            );
+        }
     },
 
     // ==================== AI Parsing ====================
@@ -348,6 +367,10 @@ const TrainingModule = {
                 return;
             }
 
+            // Pre-fetch day data for merge detection
+            const dayData = Storage.getTrainingByDate(this.currentDate);
+            const existingNames = new Set(dayData.exercises.map(e => e.name.trim().toLowerCase()));
+
             let summaryParts = [];
             exercises.forEach(ex => {
                 const volume = ex.weight * ex.sets * ex.reps;
@@ -359,9 +382,16 @@ const TrainingModule = {
                     volume: volume,
                     setDetails: ex.set_details || this.generateSetDetails(ex.weight, ex.sets, ex.reps)
                 };
-                Storage.addTrainingExercise(this.currentDate, exercise);
+                const wasMerged = existingNames.has(ex.name.trim().toLowerCase());
+                const saved = Storage.addTrainingExercise(this.currentDate, exercise);
+                existingNames.add(ex.name.trim().toLowerCase());
+
                 const weightStr = ex.weight > 0 ? `${ex.weight}kg` : '自重';
-                summaryParts.push(`• <strong>${ex.name}</strong> ${weightStr} ${ex.sets}组×${ex.reps}次 (容量${volume}kg)`);
+                if (wasMerged) {
+                    summaryParts.push(`• <strong>${ex.name}</strong> ${weightStr} +${ex.sets}组 → 共${saved.sets}组 (${saved.volume}kg)`);
+                } else {
+                    summaryParts.push(`• <strong>${ex.name}</strong> ${weightStr} ${ex.sets}组×${ex.reps}次 (容量${volume}kg)`);
+                }
             });
 
             this.loadDayData();
