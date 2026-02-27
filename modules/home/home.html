@@ -1,0 +1,62 @@
+<!-- Home Module: AI Assistant -->
+<header class="page-header home-header">
+    <div class="header-left">
+        <span class="header-date" id="homeHeaderDate">Monday, June 12</span>
+        <h1 class="header-title">🤖 AI 助手</h1>
+    </div>
+</header>
+
+<!-- Chat Bubble Area -->
+<section class="chat-section">
+    <div class="chat-messages" id="homeChatMessages">
+        <div class="message system-message">
+            <div class="bot-avatar">🤖</div>
+            <div class="bubble">
+                <p>👋 欢迎使用 AI 助手！</p>
+                <p>直接输入内容，我会自动识别：</p>
+                <ul>
+                    <li>🍎 <strong>饮食</strong>：<code>鸡胸肉 150g</code> 或 "早上吃了两个鸡蛋"</li>
+                    <li>🏋️ <strong>训练</strong>：<code>卧推 60kg 4组8个</code> 或 "今天练了胸"</li>
+                    <li>⚖️ <strong>体重</strong>：<code>体重 70.5</code></li>
+                    <li>📊 <strong>汇总</strong>：<code>汇总</code></li>
+                </ul>
+                <p>💡 <strong>智能识别：</strong>无需切换模式，AI自动判断饮食或训练</p>
+            </div>
+        </div>
+    </div>
+    <!-- Chat Input -->
+    <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+            <span class="input-icon" id="homeInputIcon">✨</span>
+            <input type="text" id="homeChatInput" class="chat-input" placeholder="输入饮食或训练内容，AI自动识别..." autocomplete="off">
+        </div>
+        <button id="homeSendBtn" class="send-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+    </div>
+</section>
+
+<!-- Quick Stats Card -->
+<section class="home-quick-stats">
+    <div class="quick-stat-item">
+        <span class="quick-stat-icon">🔥</span>
+        <div class="quick-stat-info">
+            <span class="quick-stat-value" id="homeCalories">0</span>
+            <span class="quick-stat-label">kcal today</span>
+        </div>
+    </div>
+    <div class="quick-stat-item">
+        <span class="quick-stat-icon">🥩</span>
+        <div class="quick-stat-info">
+            <span class="quick-stat-value" id="homeProtein">0</span>
+            <span class="quick-stat-label">g protein</span>
+        </div>
+    </div>
+    <div class="quick-stat-item">
+        <span class="quick-stat-icon">💪</span>
+        <div class="quick-stat-info">
+            <span class="quick-stat-value" id="homeExercises">0</span>
+            <span class="quick-stat-label">exercises</span>
+        </div>
+    </div>
+</section>

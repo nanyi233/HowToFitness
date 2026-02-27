@@ -21,9 +21,13 @@
             <p class="empty-message" style="margin-top: 40vh;">Loading...</p>
         </div>
 
-        <!-- Bottom Tab Bar (6 tabs) -->
+        <!-- Bottom Tab Bar (7 tabs) -->
         <nav class="tab-bar">
-            <button class="tab-bar-item active" data-module="food">
+            <button class="tab-bar-item active" data-module="home">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>AI</span>
+            </button>
+            <button class="tab-bar-item" data-module="food">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
                 <span>Diet</span>
             </button>
@@ -59,6 +63,7 @@
     <!-- Module JS (loaded eagerly, small enough) -->
     <script src="modules/food/food-database.js"></script>
     <script src="modules/food/food.js"></script>
+    <script src="modules/home/home.js?v=2"></script>
     <script src="modules/training/training.js"></script>
     <script src="modules/stats/stats.js"></script>
     <script src="modules/profile/profile.js"></script>
@@ -76,6 +81,7 @@
         pageContainer: null,
 
         modules: {
+            home:     { html: 'modules/home/home.html',           css: 'modules/home/home.css',         instance: window.HomeModule },
             food:     { html: 'modules/food/food.html',         css: 'modules/food/food.css',         instance: window.FoodModule },
             training: { html: 'modules/training/training.html', css: 'modules/training/training.css', instance: window.TrainingModule },
             aerobic:  { html: 'modules/aerobic/aerobic.html',   css: 'modules/aerobic/aerobic.css',   instance: window.AerobicModule },
@@ -97,7 +103,7 @@
 
             // Hash-based routing
             const hash = window.location.hash.replace('#', '');
-            const initial = hash && this.modules[hash] ? hash : 'food';
+            const initial = hash && this.modules[hash] ? hash : 'home';
             this.navigate(initial);
 
             window.addEventListener('hashchange', () => {

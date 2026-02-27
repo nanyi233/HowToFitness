@@ -14,7 +14,6 @@ const FoodModule = {
         this.initDateSelector();
         this.updateHeaderDate();
         this.loadDayData();
-        this.loadChatHistory();
     },
 
     destroy() {
@@ -27,18 +26,6 @@ const FoodModule = {
     },
 
     setupEventListeners() {
-        const chatInput = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('sendBtn');
-
-        if (chatInput) {
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.handleUserInput();
-            });
-        }
-        if (sendBtn) {
-            sendBtn.addEventListener('click', () => this.handleUserInput());
-        }
-
         const dateSelector = document.getElementById('dateSelector');
         if (dateSelector) {
             dateSelector.addEventListener('change', (e) => {

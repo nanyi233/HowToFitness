@@ -29,6 +29,27 @@
 </div>
 
 <div class="profile-menu">
+    <div class="profile-menu-item" id="weightMenuItem" onclick="ProfileModule.toggleWeightChart()">
+        <span class="pmi-icon">⚖️</span>
+        <span class="pmi-text">体重记录</span>
+        <span class="pmi-arrow" id="weightArrow">›</span>
+    </div>
+
+    <!-- Weight Chart (hidden by default) -->
+    <div class="profile-weight-section hidden" id="profileWeightSection">
+        <!-- Weight Input -->
+        <div class="weight-input-row">
+            <input type="number" id="profileWeightInput" class="weight-input" placeholder="输入体重 (kg)" step="0.1" min="20" max="300">
+            <button class="weight-add-btn" onclick="ProfileModule.addWeight()">记录</button>
+        </div>
+        <!-- Weight Chart -->
+        <div class="weight-chart-container">
+            <canvas id="profileWeightChart"></canvas>
+        </div>
+        <!-- Recent Weight Records -->
+        <div class="weight-records-list" id="profileWeightRecords"></div>
+    </div>
+
     <div class="profile-menu-item" onclick="ProfileModule.showHelp()">
         <span class="pmi-icon">❓</span>
         <span class="pmi-text">使用帮助</span>

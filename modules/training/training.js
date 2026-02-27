@@ -13,7 +13,6 @@ const TrainingModule = {
         this.initDateSelector();
         this.updateHeaderDate();
         this.loadDayData();
-        this.loadChatHistory();
     },
 
     destroy() {
@@ -26,18 +25,6 @@ const TrainingModule = {
     },
 
     setupEventListeners() {
-        const chatInput = document.getElementById('trainingChatInput');
-        const sendBtn = document.getElementById('trainingSendBtn');
-
-        if (chatInput) {
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.handleUserInput();
-            });
-        }
-        if (sendBtn) {
-            sendBtn.addEventListener('click', () => this.handleUserInput());
-        }
-
         const dateSelector = document.getElementById('trainingDateSelector');
         if (dateSelector) {
             dateSelector.addEventListener('change', (e) => {
