@@ -43,3 +43,27 @@
         <p class="empty-message">暂无记录，快去添加训练吧 💪</p>
     </div>
 </section>
+
+<!-- Training Charts -->
+<section class="training-charts-section">
+    <div class="chart-toggle">
+        <button class="chart-toggle-btn active" data-chart="intensity">💪 训练强度</button>
+        <button class="chart-toggle-btn" data-chart="volume">📦 训练容量</button>
+    </div>
+    <!-- Training Intensity Chart -->
+    <div class="card" id="trainingIntensityCard">
+        <div class="stat-chart-head">
+            <span class="stat-chart-label">💪 训练强度 vs 日期</span>
+            <span class="stat-chart-sub">每日最大使用重量 (kg)</span>
+        </div>
+        <canvas id="trainingIntensityChart"></canvas>
+    </div>
+    <!-- Training Volume Chart -->
+    <div class="card hidden" id="trainingVolumeCard">
+        <div class="stat-chart-head">
+            <span class="stat-chart-label">📦 训练容量 vs 日期</span>
+            <span class="stat-chart-sub">每日总训练容量 (kg)</span>
+        </div>
+        <canvas id="trainingVolumeChart"></canvas>
+    </div>
+</section>

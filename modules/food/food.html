@@ -59,3 +59,25 @@
         <p class="empty-message">暂无记录，快去添加食物吧 🍽️</p>
     </div>
 </section>
+
+<!-- Nutrition Charts -->
+<section class="food-charts-section">
+    <div class="chart-toggle">
+        <button class="chart-toggle-btn active" data-chart="training">🏋️ 力训日</button>
+        <button class="chart-toggle-btn" data-chart="rest">😴 休息日</button>
+    </div>
+    <!-- Training Day Chart Card -->
+    <div class="card" id="foodTrainingChartCard">
+        <div class="stat-chart-head">
+            <span class="stat-chart-label">🏋️ 力训日营养摄入</span>
+        </div>
+        <canvas id="foodTrainingDayChart"></canvas>
+    </div>
+    <!-- Rest Day Chart Card -->
+    <div class="card hidden" id="foodRestChartCard">
+        <div class="stat-chart-head">
+            <span class="stat-chart-label">😴 休息日营养摄入</span>
+        </div>
+        <canvas id="foodRestDayChart"></canvas>
+    </div>
+</section>

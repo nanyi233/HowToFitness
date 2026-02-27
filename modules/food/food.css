@@ -335,3 +335,42 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ======================== CHART SECTION ======================== */
+.food-charts-section {
+    margin-top: 20px;
+    margin-bottom: 16px;
+}
+
+.chart-toggle {
+    display: flex;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+}
+
+.chart-toggle-btn {
+    flex: 1;
+    padding: 10px 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-radius: var(--radius-xs);
+    color: var(--text-secondary);
+    transition: var(--transition);
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+.chart-toggle-btn.active {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-chart-head { margin-bottom: 12px; }
+.stat-chart-label { display: block; font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
+.stat-chart-sub { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+.food-charts-section .card canvas { width: 100% !important; border-radius: var(--radius-xs); }
