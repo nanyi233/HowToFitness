@@ -1,0 +1,70 @@
+/* ======================== APP SHELL ======================== */
+.app-shell {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    background: var(--bg);
+    padding-bottom: calc(var(--tab-height) + var(--safe-bottom) + 8px);
+}
+
+/* ======================== PAGE CONTAINER ======================== */
+#page-container {
+    padding: 0 16px 16px;
+    animation: fadePageIn 0.25s ease;
+}
+
+@keyframes fadePageIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ======================== BOTTOM TAB BAR ======================== */
+.tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: var(--max-width);
+    height: var(--tab-height);
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: var(--safe-bottom);
+    z-index: 100;
+}
+
+.tab-bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    color: var(--text-muted);
+    transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.tab-bar-item span {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.tab-bar-item svg {
+    transition: var(--transition);
+}
+
+.tab-bar-item.active {
+    color: var(--primary);
+}
+
+.tab-bar-item.active svg {
+    stroke: var(--primary);
+}

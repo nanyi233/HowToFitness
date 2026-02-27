@@ -1,0 +1,52 @@
+/* ======================== GLOBAL DESIGN TOKENS ======================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* Primary Palette */
+    --primary: #2ecc71;
+    --primary-light: #d4f5e2;
+    --primary-dark: #27ae60;
+    --accent: #00bcd4;
+    --accent-light: #e0f7fa;
+
+    /* Backgrounds */
+    --bg: #f5f7fa;
+    --bg-card: #ffffff;
+    --bg-input: #f0f2f5;
+
+    /* Text */
+    --text-primary: #1a2332;
+    --text-secondary: #6b7b8d;
+    --text-muted: #9ca8b7;
+
+    /* Borders & Shadows */
+    --border: #e8ecf0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.05);
+    --shadow-hover: 0 4px 16px rgba(0,0,0,0.10);
+
+    /* Radius */
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+
+    /* Transitions */
+    --transition: all 0.2s ease;
+
+    /* Semantic Colors */
+    --danger: #e74c3c;
+    --warning: #f39c12;
+    --info: #00bcd4;
+    --success: #4CAF50;
+
+    /* Layout */
+    --tab-height: 68px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --max-width: 430px;
+
+    /* Font */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}

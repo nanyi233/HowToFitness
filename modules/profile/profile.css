@@ -1,0 +1,58 @@
+/* ======================== PROFILE MODULE STYLES ======================== */
+.profile-avatar-area {
+    display: flex; flex-direction: column; align-items: center; padding: 24px 0 20px;
+}
+
+.avatar-ring {
+    width: 100px; height: 100px; border-radius: 50%;
+    border: 3px solid var(--primary-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.8rem; background: var(--bg-card);
+    box-shadow: 0 4px 20px rgba(46,204,113,0.12);
+    margin-bottom: 12px;
+}
+
+.profile-name { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+
+.profile-badge {
+    display: inline-block; margin-top: 6px;
+    font-size: 0.78rem; font-weight: 600;
+    padding: 4px 14px; border-radius: 999px;
+    background: var(--primary-light); color: var(--primary-dark);
+}
+
+.profile-stats-row {
+    display: flex; align-items: center;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 0;
+    margin: 0 0 24px; box-shadow: var(--shadow-card);
+}
+
+.profile-stat { flex: 1; text-align: center; }
+.profile-stat-divider { width: 1px; height: 32px; background: var(--border); }
+
+.ps-label {
+    display: block; font-size: 0.72rem; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.04em; margin-bottom: 2px;
+}
+.ps-value { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+
+.profile-menu { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+
+.profile-menu-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+    box-shadow: var(--shadow-sm); transition: var(--transition); cursor: pointer;
+}
+.profile-menu-item:active { background: var(--bg-input); }
+
+.pmi-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: var(--primary-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; flex-shrink: 0;
+}
+.pmi-text { flex: 1; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+.pmi-arrow { font-size: 1.3rem; color: var(--text-muted); font-weight: 300; }

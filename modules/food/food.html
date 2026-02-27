@@ -1,0 +1,92 @@
+<!-- Food Module: Diet Tab -->
+<header class="page-header diet-header">
+    <div class="header-left">
+        <span class="header-date" id="headerDate">Monday, June 12</span>
+        <h1 class="header-title">🍎 饮食追踪</h1>
+    </div>
+</header>
+
+<!-- Chat Bubble Area -->
+<section class="chat-section">
+    <div class="chat-messages" id="chatMessages">
+        <div class="message system-message">
+            <div class="bot-avatar">🤖</div>
+            <div class="bubble">
+                <p>👋 欢迎使用饮食追踪！</p>
+                <p>您可以输入以下内容：</p>
+                <ul>
+                    <li>📝 食物记录：<code>鸡胸肉 150g</code></li>
+                    <li>⚖️ 体重记录：<code>体重 70.5</code></li>
+                    <li>🏋️ 设置日期类型：<code>力训日</code> 或 <code>休息日</code></li>
+                    <li>📊 查看今日汇总：<code>汇总</code></li>
+                    <li>🗑️ 清除聊天记录：<code>清除记录</code></li>
+                </ul>
+                <p>💡 <strong>AI 增强：</strong>也可以自然语言输入，如"早上吃了两个鸡蛋"</p>
+            </div>
+        </div>
+    </div>
+    <!-- Chat Input -->
+    <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+            <span class="input-icon">🍴</span>
+            <input type="text" id="chatInput" class="chat-input" placeholder="输入食物名称和克数，例如：鸡胸肉 150g" autocomplete="off">
+        </div>
+        <button id="sendBtn" class="send-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+    </div>
+</section>
+
+<!-- Calories Remaining Card -->
+<section class="calories-card">
+    <div class="calories-card-header">
+        <span class="calories-label">CALORIES REMAINING</span>
+        <div class="date-controls">
+            <input type="date" id="dateSelector" class="date-input-mini">
+            <select id="dayType" class="day-type-pill">
+                <option value="training">力训日</option>
+                <option value="rest">休息日</option>
+            </select>
+        </div>
+    </div>
+    <div class="calories-big-row">
+        <span class="calories-big" id="totalCalories">0</span>
+        <span class="calories-total">/ 2,200</span>
+        <div class="calories-progress">
+            <div class="calories-progress-bar" id="caloriesProgressBar" style="width:0%"></div>
+        </div>
+    </div>
+    <div class="macro-row">
+        <div class="macro-item">
+            <span class="macro-dot dot-carbs"></span>
+            <div class="macro-info">
+                <span class="macro-name">CARBS</span>
+                <span class="macro-value"><strong id="totalCarbs">0</strong>g</span>
+            </div>
+        </div>
+        <div class="macro-item">
+            <span class="macro-dot dot-protein"></span>
+            <div class="macro-info">
+                <span class="macro-name">PROTEIN</span>
+                <span class="macro-value"><strong id="totalProtein">0</strong>g</span>
+            </div>
+        </div>
+        <div class="macro-item">
+            <span class="macro-dot dot-fat"></span>
+            <div class="macro-info">
+                <span class="macro-name">FATS</span>
+                <span class="macro-value"><strong id="totalFat">0</strong>g</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Today's Meals -->
+<section class="meals-section">
+    <div class="meals-header">
+        <h2>Today's Meals</h2>
+    </div>
+    <div class="food-list" id="foodList">
+        <p class="empty-message">暂无记录，快去添加食物吧 🍽️</p>
+    </div>
+</section>

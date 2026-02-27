@@ -1,0 +1,46 @@
+<!-- Profile Module -->
+<header class="page-header stats-header">
+    <h1 class="header-title-center">👤 Profile</h1>
+</header>
+
+<div class="profile-avatar-area">
+    <div class="avatar-ring">
+        <span class="avatar-emoji">🏋️</span>
+    </div>
+    <h2 class="profile-name">HowToFitness</h2>
+    <span class="profile-badge">Weight Loss</span>
+</div>
+
+<div class="profile-stats-row">
+    <div class="profile-stat">
+        <span class="ps-label">Streak</span>
+        <span class="ps-value" id="streakDays">--</span>
+    </div>
+    <div class="profile-stat-divider"></div>
+    <div class="profile-stat">
+        <span class="ps-label">Weight</span>
+        <span class="ps-value" id="profileWeight">--</span>
+    </div>
+    <div class="profile-stat-divider"></div>
+    <div class="profile-stat">
+        <span class="ps-label">BMI</span>
+        <span class="ps-value" id="profileBMI">--</span>
+    </div>
+</div>
+
+<div class="profile-menu">
+    <div class="profile-menu-item" onclick="ProfileModule.showHelp()">
+        <span class="pmi-icon">❓</span>
+        <span class="pmi-text">使用帮助</span>
+        <span class="pmi-arrow">›</span>
+    </div>
+    <div class="profile-menu-item" onclick="ProfileModule.clearChatHistory()">
+        <span class="pmi-icon">🗑️</span>
+        <span class="pmi-text">清除聊天记录</span>
+        <span class="pmi-arrow">›</span>
+    </div>
+</div>
+
+<footer class="module-footer">
+    <p>HowToFitness - 健康生活从记录开始</p>
+</footer>

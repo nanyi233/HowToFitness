@@ -1,0 +1,38 @@
+<!-- Stats Module -->
+<header class="page-header stats-header">
+    <h1 class="header-title-center">📊 Statistics</h1>
+</header>
+
+<!-- Chart Toggle -->
+<div class="chart-toggle">
+    <button class="toggle-btn active" data-chart="weight">Weight</button>
+    <button class="toggle-btn" data-chart="calories">Calories</button>
+</div>
+
+<!-- Weight Chart Card -->
+<div class="card" id="weightChartCard">
+    <div class="stat-chart-head">
+        <div>
+            <span class="stat-chart-label">Weekly Weight Trend</span>
+            <span class="stat-chart-big" id="latestWeight">--</span>
+            <span class="stat-chart-unit">kg</span>
+        </div>
+    </div>
+    <canvas id="weightChart"></canvas>
+</div>
+
+<!-- Training Day Chart Card -->
+<div class="card hidden" id="trainingChartCard">
+    <div class="stat-chart-head">
+        <span class="stat-chart-label">🏋️ 力训日营养摄入</span>
+    </div>
+    <canvas id="trainingDayChart"></canvas>
+</div>
+
+<!-- Rest Day Chart Card -->
+<div class="card hidden" id="restChartCard">
+    <div class="stat-chart-head">
+        <span class="stat-chart-label">😴 休息日营养摄入</span>
+    </div>
+    <canvas id="restDayChart"></canvas>
+</div>

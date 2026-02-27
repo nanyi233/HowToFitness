@@ -1,0 +1,436 @@
+/* ======================== PAGE HEADER ======================== */
+.page-header {
+    padding: 16px 0 12px;
+}
+
+.header-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-top: 2px;
+    letter-spacing: -0.02em;
+}
+
+.header-title-center {
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.header-date {
+    font-size: 0.82rem;
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+
+/* ======================== CARDS ======================== */
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 18px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+}
+
+.card h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary);
+    color: var(--primary-dark);
+}
+
+.card h3 {
+    font-size: 1rem;
+    margin: 14px 0 10px 0;
+    color: var(--text-primary);
+}
+
+/* ======================== BUTTONS ======================== */
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(46,204,113,0.3);
+}
+
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-secondary {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 12px;
+}
+
+.btn-secondary:active { transform: scale(0.98); }
+
+/* ======================== FORM STYLES ======================== */
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-xs);
+    font-size: 0.95rem;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    transition: var(--transition);
+    -webkit-appearance: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(46,204,113,0.12);
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+    background: var(--bg);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.form-group input::placeholder { color: var(--text-muted); }
+
+.form-group .hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.duration-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.duration-inputs input {
+    width: 80px;
+    text-align: center;
+}
+
+.duration-inputs span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* ======================== INFO BOXES ======================== */
+.info-box {
+    padding: 14px;
+    border-radius: var(--radius-xs);
+    margin: 10px 0;
+}
+
+.info-box h4 { margin-bottom: 6px; font-size: 0.95rem; }
+.info-box p { margin: 4px 0; font-size: 0.9rem; }
+.info-box ul { margin: 8px 0 0 20px; list-style: disc; }
+
+.info-box.recommend {
+    background: rgba(46,204,113,0.08);
+    border-left: 4px solid var(--primary);
+}
+
+.info-box.warning {
+    background: rgba(243,156,18,0.08);
+    border-left: 4px solid var(--warning);
+}
+
+.info-box.tip {
+    background: rgba(0,188,212,0.08);
+    border-left: 4px solid var(--info);
+}
+
+/* ======================== TAG LISTS ======================== */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.tag-list span {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+}
+
+.tag-list.danger span {
+    background: rgba(231,76,60,0.08);
+    color: var(--danger);
+}
+
+.tag-list.warning span {
+    background: rgba(243,156,18,0.08);
+    color: var(--warning);
+}
+
+.tag-list.info span {
+    background: rgba(0,188,212,0.08);
+    color: var(--info);
+}
+
+/* ======================== CHECK LIST ======================== */
+.check-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.check-list li {
+    padding: 6px 0 6px 24px;
+    position: relative;
+    font-size: 0.9rem;
+}
+
+.check-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: bold;
+}
+
+/* ======================== TABLES ======================== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+    background: var(--bg-input);
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.data-table .value {
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+/* ======================== RESULT GRID ======================== */
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.result-item {
+    background: var(--bg-input);
+    padding: 14px;
+    border-radius: var(--radius-xs);
+    text-align: center;
+}
+
+.result-item .label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.result-item .value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.result-item .unit {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.result-item .status { display: block; font-size: 0.75rem; margin-top: 2px; }
+.result-item .status.normal { color: var(--primary); }
+.result-item .status.warning { color: var(--warning); }
+.result-item .status.danger { color: var(--danger); }
+
+/* ======================== RESULT BOXES ======================== */
+.result-box {
+    padding: 14px;
+    border-radius: var(--radius-xs);
+    background: var(--bg-input);
+}
+
+.result-box h4 { margin-bottom: 10px; font-size: 0.95rem; }
+
+.result-box .box-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.result-box .box-item:last-child { border-bottom: none; }
+
+.result-box .box-item.highlight {
+    background: rgba(46,204,113,0.08);
+    margin: 6px -10px;
+    padding: 10px;
+    border-radius: var(--radius-xs);
+}
+
+.result-box .box-item .value {
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.result-box.training-day { border-left: 4px solid var(--primary); }
+.result-box.rest-day { border-left: 4px solid var(--accent); }
+
+/* ======================== RESULT HIGHLIGHT ======================== */
+.result-highlight {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: var(--radius);
+    color: white;
+    margin-bottom: 14px;
+}
+
+.result-highlight .label {
+    display: block;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-bottom: 6px;
+}
+
+.result-highlight .value {
+    display: block;
+    font-size: 2.6rem;
+    font-weight: 800;
+}
+
+.result-highlight .unit {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* ======================== GUIDE SECTION ======================== */
+.guide-section {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.guide-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* ======================== WARNING LIST ======================== */
+.warning-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.warning-item {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(243,156,18,0.06);
+    border-radius: var(--radius-xs);
+}
+
+.warning-item .icon { font-size: 1.1rem; }
+.warning-item p { font-size: 0.88rem; }
+
+/* ======================== KEY POINTS ======================== */
+.key-points {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.point {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-input);
+    border-radius: var(--radius-xs);
+}
+
+.point .icon { font-size: 1.3rem; width: 36px; text-align: center; }
+.point strong { display: block; margin-bottom: 2px; color: var(--primary-dark); font-size: 0.9rem; }
+.point p { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* ======================== FOOTER ======================== */
+.module-footer {
+    text-align: center;
+    padding: 16px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+.module-footer p { margin: 2px 0; }
+
+/* ======================== UTILITY ======================== */
+.hidden { display: none !important; }
+.fade-in { animation: fadeIn 0.2s ease; }
+.slide-up { animation: slideUp 0.25s ease; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ======================== EMPTY STATE ======================== */
+.empty-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 28px 16px;
+    font-size: 0.9rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
