@@ -55,6 +55,220 @@
         <span class="pmi-text">使用帮助</span>
         <span class="pmi-arrow">›</span>
     </div>
+
+    <!-- Aerobic Calculator -->
+    <div class="profile-menu-item" id="aerobicMenuItem" onclick="ProfileModule.toggleAerobicCalc()">
+        <span class="pmi-icon">🏃</span>
+        <span class="pmi-text">有氧消耗计算器</span>
+        <span class="pmi-arrow" id="aerobicArrow">›</span>
+    </div>
+    <div class="profile-section-panel hidden" id="aerobicSection">
+        <form id="aerobicForm">
+            <div class="form-group">
+                <label for="aeroWeight">体重 (kg)</label>
+                <input type="number" id="aeroWeight" placeholder="如：70" min="30" max="200" step="1" required>
+            </div>
+            <div class="form-group">
+                <label for="exerciseCategory">运动类型</label>
+                <select id="exerciseCategory" required>
+                    <option value="">请选择运动类型</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="exerciseLevel">运动强度/速度</label>
+                <select id="exerciseLevel" required disabled>
+                    <option value="">请先选择运动类型</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>运动时长</label>
+                <div class="duration-inputs">
+                    <input type="number" id="durationHours" placeholder="小时" min="0" max="24" value="0">
+                    <span>小时</span>
+                    <input type="number" id="durationMinutes" placeholder="分钟" min="0" max="59" value="30">
+                    <span>分钟</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="frequency">每周运动次数</label>
+                <select id="frequency">
+                    <option value="1">1 次/周</option>
+                    <option value="2">2 次/周</option>
+                    <option value="3" selected>3 次/周</option>
+                    <option value="4">4 次/周</option>
+                    <option value="5">5 次/周</option>
+                    <option value="6">6 次/周</option>
+                    <option value="7">7 次/周</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">🔥 计算消耗</button>
+        </form>
+
+        <!-- Aerobic Result -->
+        <div id="aeroResultCard" style="display: none; margin-top: 16px;">
+            <h3 style="margin-bottom: 12px;">📊 计算结果</h3>
+            <div class="result-highlight">
+                <span class="label">单次运动消耗</span>
+                <span class="value" id="singleCalories">-</span>
+                <span class="unit">大卡</span>
+            </div>
+            <div class="result-grid">
+                <div class="result-item">
+                    <span class="label">每小时消耗</span>
+                    <span class="value" id="hourlyCalories">-</span>
+                    <span class="unit">大卡</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">每周总消耗</span>
+                    <span class="value" id="weeklyCalories">-</span>
+                    <span class="unit">大卡</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">日均消耗</span>
+                    <span class="value" id="dailyAvgCalories">-</span>
+                    <span class="unit">大卡</span>
+                </div>
+                <div class="result-item" style="background: rgba(46,204,113,0.08); border: 2px solid var(--primary);">
+                    <span class="label">📋 填入减脂方案的数值</span>
+                    <span class="value" id="planValue">-</span>
+                    <span class="unit">大卡/天</span>
+                </div>
+            </div>
+            <div class="food-equivalent-section">
+                <h3>🍽️ 相当于可以多吃</h3>
+                <p class="hint" style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">基于日均消耗计算</p>
+                <div class="food-equiv-grid" id="foodEquivalent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fat Loss Plan Calculator -->
+    <div class="profile-menu-item" id="planMenuItem" onclick="ProfileModule.togglePlanCalc()">
+        <span class="pmi-icon">📋</span>
+        <span class="pmi-text">减脂方案计算器</span>
+        <span class="pmi-arrow" id="planArrow">›</span>
+    </div>
+    <div class="profile-section-panel hidden" id="planSection">
+        <form id="basicInfoForm">
+            <div class="form-group">
+                <label for="planGender">性别</label>
+                <select id="planGender" required>
+                    <option value="">请选择</option>
+                    <option value="male">男性</option>
+                    <option value="female">女性</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="planHeight">身高 (cm)</label>
+                <input type="number" id="planHeight" placeholder="如：175" min="100" max="250" required>
+            </div>
+            <div class="form-group">
+                <label for="planWeight">体重 (kg)</label>
+                <input type="number" id="planWeight" placeholder="如：75" min="30" max="300" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label for="planAge">年龄</label>
+                <input type="number" id="planAge" placeholder="如：25" min="10" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="trainingLevel">力训水平</label>
+                <select id="trainingLevel" required>
+                    <option value="">请选择</option>
+                    <option value="beginner">新手</option>
+                    <option value="intermediate">有基础</option>
+                    <option value="advanced">老手</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="aerobicCalories">每日平均有氧消耗 (大卡)</label>
+                <input type="number" id="aerobicCalories" placeholder="如：100（无则填0）" min="0" value="0">
+                <small class="hint">一周有氧消耗总和 ÷ 7</small>
+            </div>
+            <button type="submit" class="btn-primary">🔢 计算方案</button>
+        </form>
+
+        <!-- Plan Result -->
+        <div id="planResultCard" style="display: none; margin-top: 16px;">
+            <h3 style="margin-bottom: 12px;">📊 计算结果</h3>
+            <div class="guide-section">
+                <h4>🔥 热量数据</h4>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <span class="label">BMI</span>
+                        <span class="value" id="resultBMI">-</span>
+                        <span class="status" id="bmiStatus"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">基础代谢</span>
+                        <span class="value" id="resultBMR">-</span>
+                        <span class="unit">大卡</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">无运动总消耗</span>
+                        <span class="value" id="resultTDEE">-</span>
+                        <span class="unit">大卡</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">力训消耗</span>
+                        <span class="value" id="resultTraining">-</span>
+                        <span class="unit">大卡</span>
+                    </div>
+                </div>
+            </div>
+            <div class="guide-section">
+                <h4>⚖️ 平衡热量 vs 应吃热量</h4>
+                <div class="result-grid">
+                    <div class="result-box training-day">
+                        <h4>💪 力训日</h4>
+                        <div class="box-item"><span>平衡热量</span><span class="value" id="balanceTraining">-</span></div>
+                        <div class="box-item highlight"><span>应吃热量</span><span class="value" id="intakeTraining">-</span></div>
+                    </div>
+                    <div class="result-box rest-day">
+                        <h4>😴 休息日</h4>
+                        <div class="box-item"><span>平衡热量</span><span class="value" id="balanceRest">-</span></div>
+                        <div class="box-item highlight"><span>应吃热量</span><span class="value" id="intakeRest">-</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="guide-section">
+                <h4>🍽️ 营养配额</h4>
+                <div class="result-grid">
+                    <div class="result-box training-day">
+                        <h4>💪 力训日</h4>
+                        <div class="box-item"><span>碳水 (2.6g/kg)</span><span class="value" id="carbTraining">-</span></div>
+                        <div class="box-item"><span>蛋白质 (1.4g/kg)</span><span class="value" id="proteinTraining">-</span></div>
+                        <div class="box-item"><span>脂肪</span><span class="value" id="fatTraining">-</span></div>
+                    </div>
+                    <div class="result-box rest-day">
+                        <h4>😴 休息日</h4>
+                        <div class="box-item"><span>碳水 (2.1g/kg)</span><span class="value" id="carbRest">-</span></div>
+                        <div class="box-item"><span>蛋白质 (1.4g/kg)</span><span class="value" id="proteinRest">-</span></div>
+                        <div class="box-item"><span>脂肪</span><span class="value" id="fatRest">-</span></div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-secondary" onclick="ProfileModule.toggleMealPlan()">📋 查看详细餐食分配</button>
+        </div>
+
+        <!-- Meal Plan Detail -->
+        <div id="mealPlanCard" style="display: none; margin-top: 16px;">
+            <h4>📋 力训日餐食分配</h4>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>餐次</th><th>碳水 (g)</th><th>蛋白质 (g)</th><th>说明</th></tr></thead>
+                    <tbody id="trainingMealTable"></tbody>
+                </table>
+            </div>
+            <h4 style="margin-top:16px;">📋 休息日餐食分配</h4>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>餐次</th><th>碳水 (g)</th><th>蛋白质 (g)</th><th>说明</th></tr></thead>
+                    <tbody id="restMealTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="profile-menu-item" onclick="ProfileModule.clearChatHistory()">
         <span class="pmi-icon">🗑️</span>
         <span class="pmi-text">清除聊天记录</span>
