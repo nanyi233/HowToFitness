@@ -11,16 +11,38 @@
 
 /* ======================== PAGE CONTAINER ======================== */
 #page-container {
-    padding: 0 16px 16px;
-    animation: fadePageIn 0.25s ease;
+    padding: 0 20px 16px;
+    animation: fadePageIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @keyframes fadePageIn {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ======================== BOTTOM TAB BAR ======================== */
+/* ======================== PAGE HEADER — Apple Large Title ======================== */
+.page-header {
+    padding: 12px 0 4px;
+}
+
+.header-date {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.header-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-top: 2px;
+}
+
+/* ======================== BOTTOM TAB BAR — Apple Style ======================== */
 .tab-bar {
     position: fixed;
     bottom: 0;
@@ -29,10 +51,10 @@
     width: 100%;
     max-width: var(--max-width);
     height: var(--tab-height);
-    background: rgba(255,255,255,0.92);
+    background: rgba(249,249,249,0.94);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-top: 1px solid var(--border);
+    border-top: 0.5px solid rgba(60,60,67,0.12);
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -52,9 +74,9 @@
 }
 
 .tab-bar-item span {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     font-weight: 600;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
 }
 
 .tab-bar-item svg {

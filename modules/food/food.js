@@ -244,14 +244,14 @@ const FoodModule = {
         }
         this.isProcessing = true;
 
-        const systemPrompt = `你是一个饮食记录助手。用户会输入他们吃的食物，你需要解析出食物名称和克数，并提供每100g的营养信息。
-请严格按照以下JSON格式返回，不要有任何其他文字：
-{"success": true, "food_name": "食物名称", "grams": 数字, "per_100g": {"calories": 热量数字, "protein": 蛋白质数字, "carbs": 碳水数字, "fat": 脂肪数字}}
-如果无法解析，返回：{"success": false, "error": "原因"}
-注意：1. 如果用户没有说明克数，请根据常识估算合理的份量 2. 营养数据请尽量准确 3. 只返回JSON，不要有其他文字`;
+        // Build conversation history from chat records for multi-turn context
+        const chatHistory = Storage.getRecentChatHistory(20);
+        const messages = API.buildChatMessages(chatHistory);
+
+        const systemPrompt = `你是一个饮食记录助手。（系统提示仅在直连模式使用）`;
 
         try {
-            const aiResponse = await API.callDeepSeek(message, systemPrompt, { type: 'food' });
+            const aiResponse = await API.callDeepSeek(message, systemPrompt, { type: 'food', messages });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {
@@ -260,21 +260,37 @@ const FoodModule = {
                 return;
             }
 
-            const nutrition = {
-                name: result.food_name,
+            // Support both single food (legacy) and multi-food (new) response format
+            const foods = result.foods || [{
+                food_name: result.food_name,
                 grams: result.grams,
-                calories: Math.round(result.per_100g.calories * result.grams / 100),
-                protein: Math.round(result.per_100g.protein * result.grams / 100 * 10) / 10,
-                carbs: Math.round(result.per_100g.carbs * result.grams / 100 * 10) / 10,
-                fat: Math.round(result.per_100g.fat * result.grams / 100 * 10) / 10
-            };
+                per_100g: result.per_100g
+            }];
 
-            await Storage.addFood(this.currentDate, nutrition);
+            if (foods.length === 0) {
+                this.addMessage('❌ 未能识别到食物信息', 'bot', 'error');
+                this.isProcessing = false;
+                return;
+            }
+
+            let parts = [];
+            for (const item of foods) {
+                const nutrition = {
+                    name: item.food_name,
+                    grams: item.grams,
+                    calories: Math.round(item.per_100g.calories * item.grams / 100),
+                    protein: Math.round(item.per_100g.protein * item.grams / 100 * 10) / 10,
+                    carbs: Math.round(item.per_100g.carbs * item.grams / 100 * 10) / 10,
+                    fat: Math.round(item.per_100g.fat * item.grams / 100 * 10) / 10
+                };
+                await Storage.addFood(this.currentDate, nutrition);
+                parts.push(`• <strong>${nutrition.name}</strong> ${nutrition.grams}g — 🔥${nutrition.calories}kcal 🥩${nutrition.protein}g`);
+            }
+
             await this.loadDayData();
 
             this.addMessage(
-                `✅ <span class="ai-badge">AI</span> 已添加：<strong>${nutrition.name}</strong> ${nutrition.grams}g<br>` +
-                `🔥 ${nutrition.calories}kcal · 🥩 ${nutrition.protein}g蛋白 · 🍚 ${nutrition.carbs}g碳水 · 🥑 ${nutrition.fat}g脂肪`,
+                `✅ <span class="ai-badge">AI</span> 已记录 ${foods.length} 项饮食：<br>` + parts.join('<br>'),
                 'bot', 'success'
             );
         } catch (error) {
@@ -290,14 +306,14 @@ const FoodModule = {
         }
         this.isProcessing = true;
 
-        const systemPrompt = `你是一个营养学专家。请提供食物每100g的营养信息。
-请严格按照以下JSON格式返回：
-{"success": true, "food_name": "标准化的食物名称", "per_100g": {"calories": 热量数字, "protein": 蛋白质数字, "carbs": 碳水数字, "fat": 脂肪数字}}
-如果无法识别食物，返回：{"success": false, "error": "原因"}
-注意：只返回JSON，不要有其他文字`;
+        // Build conversation history for context
+        const chatHistory = Storage.getRecentChatHistory(20);
+        const messages = API.buildChatMessages(chatHistory);
+
+        const systemPrompt = `你是一个营养学专家。（系统提示仅在直连模式使用）`;
 
         try {
-            const aiResponse = await API.callDeepSeek(`请提供"${foodName}"的营养信息`, systemPrompt, { type: 'food' });
+            const aiResponse = await API.callDeepSeek(`请提供"${foodName}"的营养信息`, systemPrompt, { type: 'food', messages });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {

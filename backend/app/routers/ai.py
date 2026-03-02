@@ -20,11 +20,13 @@ router = APIRouter(prefix="/api/ai", tags=["AI"])
 async def api_parse_food(body: AIParseRequest):
     """
     Parse a natural-language food description and return structured nutrition data.
+    Supports multi-turn conversation via optional messages history.
 
     Example prompt: "200g鸡胸肉" or "一碗米饭加一个鸡蛋"
     """
     try:
-        result = await parse_food(body.prompt)
+        history = [{"role": m.role, "content": m.content} for m in body.messages] if body.messages else None
+        result = await parse_food(body.prompt, history=history)
         return result
     except ValueError as exc:
         raise HTTPException(
@@ -43,11 +45,13 @@ async def api_parse_food(body: AIParseRequest):
 async def api_parse_training(body: AIParseRequest):
     """
     Parse a natural-language training description and return structured exercise data.
+    Supports multi-turn conversation via optional messages history.
 
     Example prompt: "卧推 60kg 4组8个，深蹲 80kg 5组5个"
     """
     try:
-        result = await parse_training(body.prompt)
+        history = [{"role": m.role, "content": m.content} for m in body.messages] if body.messages else None
+        result = await parse_training(body.prompt, history=history)
         return result
     except ValueError as exc:
         raise HTTPException(

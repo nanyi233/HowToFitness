@@ -6,6 +6,7 @@
 const HomeModule = {
     currentDate: null,
     isProcessing: false,
+    isChatExpanded: false,
 
     // Keywords for local classification
     TRAINING_KEYWORDS: [
@@ -30,13 +31,87 @@ const HomeModule = {
 
     init() {
         this.currentDate = Utils.formatDate(new Date());
+        this.isChatExpanded = false;
         this.setupEventListeners();
         this.updateHeaderDate();
+        this.updateHeroGreeting();
+        this.updateHeroStats();
         this.loadChatHistory();
-        this.updateQuickStats();
     },
 
     destroy() {},
+
+    // ==================== Hero Section ====================
+
+    updateHeroGreeting() {
+        const el = document.getElementById('heroGreeting');
+        if (!el) return;
+        const hour = new Date().getHours();
+        let greeting = '';
+        if (hour < 6) greeting = '夜深了，注意休息';
+        else if (hour < 10) greeting = '早安，新的一天开始了';
+        else if (hour < 12) greeting = '上午好，保持状态';
+        else if (hour < 14) greeting = '午饭时间，别忘了记录';
+        else if (hour < 17) greeting = '下午好，今天训练了吗';
+        else if (hour < 20) greeting = '傍晚好，是时候锻炼了';
+        else greeting = '晚上好，记录今天的成果';
+        el.textContent = greeting;
+    },
+
+    async updateHeroStats() {
+        const caloriesEl = document.getElementById('heroCalories');
+        const proteinEl = document.getElementById('heroProtein');
+        const volumeEl = document.getElementById('heroVolume');
+        if (!caloriesEl) return;
+
+        try {
+            const dietData = await Storage.getDietByDate(this.currentDate);
+            const trainingData = await Storage.getTrainingByDate(this.currentDate);
+
+            caloriesEl.textContent = dietData.totals.calories || 0;
+            proteinEl.textContent = dietData.totals.protein || 0;
+
+            let totalVolume = 0;
+            if (trainingData.exercises) {
+                trainingData.exercises.forEach(ex => totalVolume += (ex.volume || 0));
+            }
+            volumeEl.textContent = totalVolume;
+        } catch (e) {
+            console.error('Failed to update hero stats:', e);
+        }
+    },
+
+    // ==================== Chat Expand/Collapse ====================
+
+    toggleChat(expand) {
+        const chatSection = document.getElementById('chatSection');
+        const hero = document.getElementById('homeHero');
+        const hintEl = document.getElementById('chatHandleHint');
+        if (!chatSection) return;
+
+        if (typeof expand === 'boolean') {
+            this.isChatExpanded = expand;
+        } else {
+            this.isChatExpanded = !this.isChatExpanded;
+        }
+
+        if (this.isChatExpanded) {
+            chatSection.classList.remove('collapsed');
+            chatSection.classList.add('expanded');
+            if (hero) hero.classList.add('hidden');
+            if (hintEl) hintEl.textContent = '点击收起';
+            // Scroll to bottom after expand
+            setTimeout(() => {
+                const chatMessages = document.getElementById('homeChatMessages');
+                if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 350);
+        } else {
+            chatSection.classList.remove('expanded');
+            chatSection.classList.add('collapsed');
+            if (hero) hero.classList.remove('hidden');
+            if (hintEl) hintEl.textContent = '点击展开对话';
+        }
+    },
 
     updateHeaderDate() {
         const el = document.getElementById('homeHeaderDate');
@@ -46,19 +121,27 @@ const HomeModule = {
     setupEventListeners() {
         const chatInput = document.getElementById('homeChatInput');
         const sendBtn = document.getElementById('homeSendBtn');
+        const chatHandle = document.getElementById('chatHandle');
 
         if (chatInput) {
             chatInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') this.handleUserInput();
             });
+            // Expand chat when user focuses the input
+            chatInput.addEventListener('focus', () => {
+                if (!this.isChatExpanded) this.toggleChat(true);
+            });
         }
         if (sendBtn) {
             sendBtn.addEventListener('click', () => this.handleUserInput());
         }
+        if (chatHandle) {
+            chatHandle.addEventListener('click', () => this.toggleChat());
+        }
     },
 
     updateQuickStats() {
-        // Quick Stats section removed — kept as no-op to avoid call-site errors
+        this.updateHeroStats();
     },
 
     // ==================== Smart Input Detection ====================
@@ -212,6 +295,10 @@ const HomeModule = {
         this.isProcessing = true;
         this.addMessage('🤖 正在分析您的输入...', 'bot', 'info', false);
 
+        // Build conversation history from home chat records for multi-turn context
+        const chatHistory = Storage.getRecentChatHistory(20);
+        const messages = API.buildChatMessages(chatHistory);
+
         const systemPrompt = `你是一个健身助手，负责记录用户的饮食和训练。
 用户会输入一段话，你需要判断这是饮食记录还是训练记录，并解析出具体信息。
 
@@ -244,7 +331,7 @@ const HomeModule = {
 4. 只返回JSON`;
 
         try {
-            const aiResponse = await API.callDeepSeek(message, systemPrompt, { maxTokens: 800 });
+            const aiResponse = await API.callDeepSeek(message, systemPrompt, { maxTokens: 800, messages });
             const result = API.parseJSONResponse(aiResponse);
 
             if (result.type === 'food') {
@@ -261,7 +348,7 @@ const HomeModule = {
     },
 
     async processAIFoodResult(result) {
-        const items = result.items || [];
+        const items = result.foods || result.items || [];
         if (items.length === 0) {
             this.addMessage('❌ 未能识别到食物信息，请重新描述', 'bot', 'error');
             return;
@@ -380,8 +467,12 @@ const HomeModule = {
 如果无法解析，返回：{"success": false, "error": "原因"}
 注意：1. 如果用户没有说明克数，请根据常识估算合理的份量 2. 营养数据请尽量准确 3. 只返回JSON`;
 
+        // Build conversation history for context
+        const chatHistory = Storage.getRecentChatHistory(20);
+        const messages = API.buildChatMessages(chatHistory);
+
         try {
-            const aiResponse = await API.callDeepSeek(message, systemPrompt);
+            const aiResponse = await API.callDeepSeek(message, systemPrompt, { messages });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {
@@ -395,7 +486,7 @@ const HomeModule = {
                 return;
             }
 
-            const items = result.items || [];
+            const items = result.foods || result.items || [];
             if (items.length === 0) {
                 this.addMessage('❌ 未能识别到食物信息', 'bot', 'error');
                 this.isProcessing = false;
@@ -440,8 +531,12 @@ const HomeModule = {
 如果无法识别食物，返回：{"success": false, "error": "原因"}
 注意：只返回JSON，不要有其他文字`;
 
+        // Build conversation history for context
+        const chatHistory = Storage.getRecentChatHistory(20);
+        const messages = API.buildChatMessages(chatHistory);
+
         try {
-            const aiResponse = await API.callDeepSeek(`请提供"${foodName}"的营养信息`, systemPrompt);
+            const aiResponse = await API.callDeepSeek(`请提供"${foodName}"的营养信息`, systemPrompt, { type: 'food', messages });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {
@@ -557,6 +652,10 @@ const HomeModule = {
         this.isProcessing = true;
         this.addMessage('🤖 正在使用AI分析训练内容...', 'bot', 'info', false);
 
+        // Build conversation history for context
+        const chatHistory = Storage.getRecentChatHistory(20);
+        const messages = API.buildChatMessages(chatHistory);
+
         const systemPrompt = `你是一个力量训练记录助手。用户会描述他们的训练内容，你需要解析出每个训练动作的名称、重量（kg）、组数和每组次数。
 
 请严格按照以下JSON格式返回，不要有任何其他文字：
@@ -586,7 +685,7 @@ const HomeModule = {
 5. 只返回JSON`;
 
         try {
-            const aiResponse = await API.callDeepSeek(message, systemPrompt, { maxTokens: 800 });
+            const aiResponse = await API.callDeepSeek(message, systemPrompt, { maxTokens: 800, type: 'training', messages });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {

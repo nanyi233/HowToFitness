@@ -300,37 +300,14 @@ const TrainingModule = {
         this.isProcessing = true;
         this.addMessage('🤖 正在使用AI分析您的训练内容...', 'bot', 'info', false);
 
-        const systemPrompt = `你是一个力量训练记录助手。用户会描述他们的训练内容，你需要解析出每个训练动作的名称、重量（kg）、组数和每组次数。
+        // Build conversation history from training chat records for multi-turn context
+        const chatHistory = Storage.getRecentTrainingChatHistory(20);
+        const messages = API.buildChatMessages(chatHistory);
 
-请严格按照以下JSON格式返回，不要有任何其他文字：
-{
-    "success": true,
-    "exercises": [
-        {
-            "name": "标准化的训练动作名称",
-            "weight": 重量数字(kg，自重填0),
-            "sets": 组数,
-            "reps": 每组次数,
-            "set_details": [
-                {"weight": 重量, "reps": 次数},
-                {"weight": 重量, "reps": 次数}
-            ]
-        }
-    ],
-    "duration": 训练时长分钟数(如果用户提及了时长，否则为null)
-}
-
-如果无法解析，返回：{"success": false, "error": "原因"}
-
-注意：
-1. 如果用户描述了多个动作，请分别解析
-2. set_details 数组长度应等于组数
-3. 如果用户没指定重量，根据动作合理估计或填0（自重）
-4. 常见动作名称请标准化：如"卧推"、"深蹲"、"硬拉"、"引体向上"等
-5. 只返回JSON`;
+        const systemPrompt = `你是一个力量训练记录助手。（系统提示仅在直连模式使用）`;
 
         try {
-            const aiResponse = await API.callDeepSeek(message, systemPrompt, { maxTokens: 800, type: 'training' });
+            const aiResponse = await API.callDeepSeek(message, systemPrompt, { maxTokens: 800, type: 'training', messages });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {

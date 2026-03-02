@@ -3,7 +3,12 @@ Application configuration using pydantic-settings.
 Reads from environment variables or .env file.
 """
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
+
+# Resolve .env path relative to this file (backend/.env), not CWD
+_ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 
 
 class Settings(BaseSettings):
@@ -23,7 +28,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = ["*"]
 
     class Config:
-        env_file = ".env"
+        env_file = str(_ENV_FILE)
         env_file_encoding = "utf-8"
         extra = "ignore"
 

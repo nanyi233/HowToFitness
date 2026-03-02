@@ -1,39 +1,70 @@
-<!-- Home Module: AI Assistant -->
+<!-- Home Module: AI Assistant — Apple Style -->
+<div class="home-bg-layer"></div>
+
 <header class="page-header home-header">
     <div class="header-left">
         <span class="header-date" id="homeHeaderDate">Monday, June 12</span>
-        <h1 class="header-title">🔥 焚决</h1>
+        <h1 class="header-title">焚决</h1>
     </div>
 </header>
 
-<!-- Chat Bubble Area -->
-<section class="chat-section">
-    <div class="chat-messages" id="homeChatMessages">
-        <div class="message system-message">
-            <div class="bot-avatar">🔥</div>
-            <div class="bubble">
-                <p>👋 欢迎使用焚决！</p>
-                <p>直接输入内容，我会自动识别：</p>
-                <ul>
-                    <li>🍎 <strong>饮食</strong>：<code>鸡胸肉 150g</code> 或 "早上吃了两个鸡蛋"</li>
-                    <li>🏋️ <strong>训练</strong>：<code>卧推 60kg 4组8个</code> 或 "今天练了胸"</li>
-                    <li>⚖️ <strong>体重</strong>：<code>体重 70.5</code></li>
-                    <li>📊 <strong>汇总</strong>：<code>汇总</code></li>
-                </ul>
-                <p>💡 <strong>智能识别：</strong>无需切换模式，AI自动判断饮食或训练</p>
+<!-- Hero Area — visible when chat is collapsed -->
+<section class="home-hero" id="homeHero">
+    <div class="hero-greeting" id="heroGreeting">💪 今天也要好好训练</div>
+    <div class="hero-stats" id="heroStats">
+        <div class="hero-stat-item">
+            <div class="hero-stat-ring ring-calories">
+                <span class="hero-stat-value" id="heroCalories">--</span>
             </div>
+            <span class="hero-stat-label">千卡</span>
         </div>
-    </div>
-    <!-- Chat Input -->
-    <div class="chat-input-container">
-        <div class="chat-input-wrapper">
-            <span class="input-icon" id="homeInputIcon">✨</span>
-            <input type="text" id="homeChatInput" class="chat-input" placeholder="输入饮食或训练内容，AI自动识别..." autocomplete="off">
+        <div class="hero-stat-item">
+            <div class="hero-stat-ring ring-protein">
+                <span class="hero-stat-value" id="heroProtein">--</span>
+            </div>
+            <span class="hero-stat-label">蛋白质</span>
         </div>
-        <button id="homeSendBtn" class="send-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
+        <div class="hero-stat-item">
+            <div class="hero-stat-ring ring-volume">
+                <span class="hero-stat-value" id="heroVolume">--</span>
+            </div>
+            <span class="hero-stat-label">容量(kg)</span>
+        </div>
     </div>
 </section>
 
+<!-- Chat Sheet — iOS bottom sheet style -->
+<section class="chat-section collapsed" id="chatSection">
+    <!-- Sheet handle -->
+    <div class="chat-handle" id="chatHandle">
+        <div class="chat-handle-bar"></div>
+    </div>
 
+    <div class="chat-messages" id="homeChatMessages">
+        <div class="message system-message">
+            <div class="bot-avatar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="bubble">
+                <p class="bubble-title">欢迎使用焚决</p>
+                <p>直接输入内容，我会自动识别：</p>
+                <div class="bubble-list">
+                    <div class="bubble-list-item">🍎 饮食 — <code>鸡胸肉 150g</code></div>
+                    <div class="bubble-list-item">🏋️ 训练 — <code>卧推 60kg 4组8个</code></div>
+                    <div class="bubble-list-item">⚖️ 体重 — <code>体重 70.5</code></div>
+                    <div class="bubble-list-item">📊 汇总 — <code>汇总</code></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Input — pill shape -->
+    <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+            <input type="text" id="homeChatInput" class="chat-input" placeholder="记录饮食或训练..." autocomplete="off">
+        </div>
+        <button id="homeSendBtn" class="send-btn" aria-label="Send">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2"/></svg>
+        </button>
+    </div>
+</section>
