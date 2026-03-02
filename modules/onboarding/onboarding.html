@@ -1,0 +1,150 @@
+<!-- Onboarding Module — First-time Setup Wizard -->
+<div class="onboarding-page">
+    <!-- Progress Bar -->
+    <div class="onboarding-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" id="onboardingProgressFill" style="width: 33%"></div>
+        </div>
+        <span class="progress-text" id="onboardingProgressText">1 / 3</span>
+    </div>
+
+    <!-- Step 1: Body Info -->
+    <div class="onboarding-step active" id="onboardingStep1">
+        <div class="step-icon">📏</div>
+        <h2 class="step-title">基本身体数据</h2>
+        <p class="step-desc">填写你的身体信息，我们会帮你计算出基础代谢</p>
+
+        <form id="onboardingBodyForm" autocomplete="off">
+            <div class="form-group">
+                <label for="obGender">性别</label>
+                <div class="gender-toggle">
+                    <button type="button" class="gender-btn active" data-value="male" id="obGenderMale" onclick="OnboardingModule.setGender('male')">
+                        🙋‍♂️ 男
+                    </button>
+                    <button type="button" class="gender-btn" data-value="female" id="obGenderFemale" onclick="OnboardingModule.setGender('female')">
+                        🙋‍♀️ 女
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="obHeight">身高 (cm)</label>
+                <input type="number" id="obHeight" placeholder="例如：175" min="100" max="250" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="obWeight">体重 (kg)</label>
+                <input type="number" id="obWeight" placeholder="例如：70" min="30" max="300" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="obAge">年龄</label>
+                <input type="number" id="obAge" placeholder="例如：25" min="10" max="100" required>
+            </div>
+
+            <button type="button" class="btn-primary" onclick="OnboardingModule.goToStep2()">
+                下一步 →
+            </button>
+        </form>
+    </div>
+
+    <!-- Step 2: Metabolism Result & Goal Selection -->
+    <div class="onboarding-step" id="onboardingStep2">
+        <div class="step-icon">🔥</div>
+        <h2 class="step-title">你的代谢数据</h2>
+        <p class="step-desc">基于你的身体数据，计算出的每日代谢热量</p>
+
+        <!-- Metabolism Cards -->
+        <div class="metabolism-cards">
+            <div class="meta-card">
+                <span class="meta-label">BMR 基础代谢</span>
+                <span class="meta-value" id="obBMR">--</span>
+                <span class="meta-unit">千卡/天</span>
+            </div>
+            <div class="meta-card accent">
+                <span class="meta-label">TDEE 每日总消耗</span>
+                <span class="meta-value" id="obTDEE">--</span>
+                <span class="meta-unit">千卡/天</span>
+            </div>
+            <div class="meta-card small">
+                <span class="meta-label">BMI</span>
+                <span class="meta-value" id="obBMI">--</span>
+                <span class="meta-status" id="obBMIStatus"></span>
+            </div>
+        </div>
+
+        <div class="goal-section">
+            <h3 class="goal-title">选择你的目标</h3>
+            <div class="goal-cards">
+                <button type="button" class="goal-card" id="goalBulk" onclick="OnboardingModule.setGoal('bulk')">
+                    <span class="goal-icon">💪</span>
+                    <span class="goal-name">增肌计划</span>
+                    <span class="goal-desc">热量盈余，增加肌肉量</span>
+                </button>
+                <button type="button" class="goal-card" id="goalCut" onclick="OnboardingModule.setGoal('cut')">
+                    <span class="goal-icon">🔥</span>
+                    <span class="goal-name">减脂计划</span>
+                    <span class="goal-desc">热量缺口，降低体脂率</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="step-buttons">
+            <button type="button" class="btn-back" onclick="OnboardingModule.goToStep1()">← 返回</button>
+            <button type="button" class="btn-primary" id="obStep2Next" onclick="OnboardingModule.goToStep3()" disabled>下一步 →</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Macro Targets -->
+    <div class="onboarding-step" id="onboardingStep3">
+        <div class="step-icon">🎯</div>
+        <h2 class="step-title">你的每日目标</h2>
+        <p class="step-desc" id="obGoalDesc">根据你的计划，每天需要摄入：</p>
+
+        <!-- Macro Target Display -->
+        <div class="macro-target-card" id="obMacroCard">
+            <div class="macro-header">
+                <span class="macro-plan-badge" id="obPlanBadge">增肌计划</span>
+            </div>
+
+            <div class="macro-calories-ring">
+                <span class="macro-cal-label">目标热量</span>
+                <span class="macro-cal-value" id="obTargetCal">--</span>
+                <span class="macro-cal-unit">千卡/天</span>
+            </div>
+
+            <div class="macro-grid">
+                <div class="macro-item carb">
+                    <div class="macro-circle">
+                        <span class="macro-num" id="obTargetCarb">--</span>
+                        <span class="macro-g">g</span>
+                    </div>
+                    <span class="macro-name">碳水</span>
+                </div>
+                <div class="macro-item protein">
+                    <div class="macro-circle">
+                        <span class="macro-num" id="obTargetProtein">--</span>
+                        <span class="macro-g">g</span>
+                    </div>
+                    <span class="macro-name">蛋白质</span>
+                </div>
+                <div class="macro-item fat">
+                    <div class="macro-circle">
+                        <span class="macro-num" id="obTargetFat">--</span>
+                        <span class="macro-g">g</span>
+                    </div>
+                    <span class="macro-name">脂肪</span>
+                </div>
+            </div>
+
+            <div class="macro-detail-box" id="obMacroDetail">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <div class="step-buttons">
+            <button type="button" class="btn-back" onclick="OnboardingModule.goToStep2()">← 返回</button>
+            <button type="button" class="btn-primary" onclick="OnboardingModule.finish()">🚀 开始使用</button>
+        </div>
+    </div>
+</div>

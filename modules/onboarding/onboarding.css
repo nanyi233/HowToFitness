@@ -1,0 +1,435 @@
+/* ======================== ONBOARDING MODULE STYLES ======================== */
+
+.onboarding-page {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 32px);
+    padding: 20px 0;
+}
+
+/* Progress Bar */
+.onboarding-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-input);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: var(--radius-pill);
+    transition: width 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.progress-text {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Steps */
+.onboarding-step {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.onboarding-step.active {
+    display: block;
+}
+
+.step-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.step-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    text-align: center;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.step-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.5;
+}
+
+/* Gender Toggle */
+.gender-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.gender-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.gender-btn.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+    box-shadow: 0 2px 12px rgba(0, 122, 255, 0.15);
+}
+
+.gender-btn:active {
+    transform: scale(0.97);
+}
+
+/* Step Buttons */
+.step-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.step-buttons .btn-primary {
+    flex: 1;
+}
+
+.step-buttons .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-back {
+    padding: 14px 20px;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-back:active {
+    background: var(--border);
+    transform: scale(0.97);
+}
+
+/* Metabolism Cards */
+.metabolism-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.meta-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.meta-card.accent {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-color: transparent;
+    color: white;
+}
+
+.meta-card.accent .meta-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.meta-card.accent .meta-value {
+    color: white;
+    font-size: 2rem;
+}
+
+.meta-card.accent .meta-unit {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.meta-card.small {
+    grid-column: 1 / -1;
+}
+
+.meta-label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.meta-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    line-height: 1.2;
+}
+
+.meta-unit {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.meta-status {
+    display: block;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.meta-status.normal { color: var(--success); }
+.meta-status.warning { color: var(--warning); }
+.meta-status.danger { color: var(--danger); }
+
+/* Goal Selection */
+.goal-section {
+    margin-bottom: 4px;
+}
+
+.goal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    text-align: center;
+}
+
+.goal-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.goal-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.goal-card:active {
+    transform: scale(0.97);
+}
+
+.goal-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2);
+}
+
+.goal-icon {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+}
+
+.goal-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.goal-card.selected .goal-name {
+    color: var(--primary);
+}
+
+.goal-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Macro Target Card */
+.macro-target-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 8px;
+}
+
+.macro-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.macro-plan-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.macro-plan-badge.bulk {
+    background: rgba(52, 199, 89, 0.12);
+    color: var(--success);
+}
+
+.macro-plan-badge.cut {
+    background: rgba(255, 59, 48, 0.1);
+    color: var(--danger);
+}
+
+.macro-calories-ring {
+    text-align: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(88, 86, 214, 0.05));
+    border-radius: var(--radius-sm);
+}
+
+.macro-cal-label {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.macro-cal-value {
+    display: block;
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: var(--primary-dark);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+}
+
+.macro-cal-unit {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Macro Grid */
+.macro-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.macro-item {
+    text-align: center;
+}
+
+.macro-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    border: 3px solid var(--border);
+}
+
+.macro-item.carb .macro-circle {
+    border-color: var(--warning);
+    background: rgba(255, 149, 0, 0.06);
+}
+
+.macro-item.protein .macro-circle {
+    border-color: var(--primary);
+    background: rgba(0, 122, 255, 0.06);
+}
+
+.macro-item.fat .macro-circle {
+    border-color: var(--accent);
+    background: rgba(88, 86, 214, 0.06);
+}
+
+.macro-num {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.macro-g {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.macro-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* Macro Detail Box */
+.macro-detail-box {
+    background: var(--bg-input);
+    border-radius: var(--radius-xs);
+    padding: 14px;
+}
+
+.macro-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--separator);
+}
+
+.macro-detail-row:last-child {
+    border-bottom: none;
+}
+
+.macro-detail-row .label {
+    color: var(--text-secondary);
+}
+
+.macro-detail-row .value {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

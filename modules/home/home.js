@@ -8,26 +8,7 @@ const HomeModule = {
     isProcessing: false,
     isChatExpanded: false,
 
-    // Keywords for local classification
-    TRAINING_KEYWORDS: [
-        '卧推', '深蹲', '硬拉', '推举', '划船', '弯举', '飞鸟', '夹胸',
-        '引体', '俯卧撑', '臂屈伸', '腿举', '腿弯', '腿屈伸', '小腿',
-        '侧平举', '前平举', '耸肩', '下拉', '坐姿', '站姿', '绳索',
-        'bench', 'squat', 'deadlift', 'press', 'curl', 'row', 'pullup',
-        '组', '次', 'kg', 'rep', 'set', '自重',
-        '练了', '练胸', '练背', '练腿', '练肩', '练臂', '练手',
-        '有氧', '跑步', '跳绳', '椭圆', '游泳',
-        '训练时长'
-    ],
-    FOOD_KEYWORDS: [
-        '吃', '喝', '早餐', '午餐', '晚餐', '加餐', '零食', '夜宵',
-        '鸡', '牛', '猪', '鱼', '虾', '蛋', '奶', '豆', '米', '面',
-        '饭', '粥', '汤', '菜', '肉', '水果', '蔬菜', '沙拉',
-        '咖啡', '牛奶', '酸奶', '果汁', '茶',
-        '克', 'g', '两', '碗', '杯', '个', '片', '块', '根',
-        '蛋白粉', '增肌粉', '燕麦', '香蕉', '苹果', '面包',
-        '力训日', '休息日', '训练日'
-    ],
+
 
     init() {
         this.currentDate = Utils.formatDate(new Date());
@@ -144,41 +125,7 @@ const HomeModule = {
         this.updateHeroStats();
     },
 
-    // ==================== Smart Input Detection ====================
 
-    detectInputType(message) {
-        const lower = message.toLowerCase();
-
-        if (/\d+\s*[kK][gG]/.test(message)) return 'training';
-        if (/\d+\s*[x×]\s*\d+/.test(message)) return 'training';
-        if (/自重/.test(message)) return 'training';
-        if (/\d+\s*组/.test(message) || /\d+\s*次/.test(message)) return 'training';
-
-        if (/\d+\s*[gG克]/.test(message) && !/[kK][gG]/.test(message)) {
-            return 'food';
-        }
-
-        let foodScore = 0;
-        let trainingScore = 0;
-
-        this.FOOD_KEYWORDS.forEach(k => {
-            const kl = k.toLowerCase();
-            if (kl === 'g') return;
-            if (lower.includes(kl)) foodScore++;
-        });
-        this.TRAINING_KEYWORDS.forEach(k => {
-            const kl = k.toLowerCase();
-            if (kl === 'kg') return;
-            if (lower.includes(kl)) trainingScore++;
-        });
-
-        if (trainingScore > 0 && foodScore === 0) return 'training';
-        if (foodScore > 0 && trainingScore === 0) return 'food';
-        if (trainingScore >= foodScore + 1) return 'training';
-        if (foodScore >= trainingScore + 1) return 'food';
-
-        return 'unknown';
-    },
 
     // ==================== Chat Interface ====================
 
@@ -253,7 +200,7 @@ const HomeModule = {
 
     // ==================== Message Processing ====================
 
-    processMessage(message) {
+    async processMessage(message) {
         const lower = message.toLowerCase();
 
         if (lower.includes('体重')) { this.handleWeightInput(message); return; }
@@ -269,18 +216,25 @@ const HomeModule = {
             return;
         }
 
-        const inputType = this.detectInputType(message);
+        // Detect input type via backend API
+        try {
+            const detection = await API.detectInput(message);
+            const inputType = detection.type;
 
-        if (inputType === 'food') {
-            this.handleFoodInput(message);
-        } else if (inputType === 'training') {
-            const parsed = this.tryLocalTrainingParse(message);
-            if (parsed) {
-                this.addTrainingExercise(parsed);
+            if (inputType === 'food') {
+                this.handleFoodInput(message);
+            } else if (inputType === 'training') {
+                const parseResult = await API.parseTrainingLocal(message);
+                if (parseResult.success && parseResult.exercise) {
+                    this.addTrainingExercise(parseResult.exercise);
+                } else {
+                    this.handleAITrainingInput(message);
+                }
             } else {
-                this.handleAITrainingInput(message);
+                this.handleAISmartInput(message);
             }
-        } else {
+        } catch (e) {
+            console.error('Input detection failed:', e);
             this.handleAISmartInput(message);
         }
     },
@@ -432,23 +386,24 @@ const HomeModule = {
 
         const foodName = match[1].trim();
         const grams = parseFloat(match[2]);
-        const foodData = searchFood(foodName);
-
-        if (!foodData) {
-            this.addMessage(`🤖 本地未找到"${foodName}"，正在使用AI查询...`, 'bot', 'info', false);
-            await this.getAINutritionInfo(foodName, grams);
-            return;
-        }
-
-        const nutrition = calculateNutrition(foodData, grams);
-        await Storage.addFood(this.currentDate, nutrition);
+        // Try backend food database first
+        try {
+            const nutrition = await API.calculateNutrition(foodName, grams);
+            await Storage.addFood(this.currentDate, nutrition);
         this.updateQuickStats();
 
-        this.addMessage(
-            `✅ 🍎 已添加：<strong>${nutrition.name}</strong> ${grams}g<br>` +
-            `🔥 ${nutrition.calories}kcal · 🥩 ${nutrition.protein}g蛋白 · 🍚 ${nutrition.carbs}g碳水 · 🥑 ${nutrition.fat}g脂肪`,
-            'bot', 'success'
-        );
+            this.updateQuickStats();
+            this.addMessage(
+                `✅ 🍎 已添加：<strong>${nutrition.name}</strong> ${grams}g<br>` +
+                `🔥 ${nutrition.calories}kcal · 🥩 ${nutrition.protein}g蛋白 · 🍚 ${nutrition.carbs}g碳水 · 🥑 ${nutrition.fat}g脂肪`,
+                'bot', 'success'
+            );
+            return;
+        } catch (e) {
+            // Food not in local DB, fall back to AI
+            this.addMessage(`🤖 本地未找到"${foodName}"，正在使用AI查询...`, 'bot', 'info', false);
+            await this.getAINutritionInfo(foodName, grams);
+        }
     },
 
     async handleAIFoodInput(message) {
@@ -570,38 +525,6 @@ const HomeModule = {
 
     // ==================== Training Input Processing ====================
 
-    tryLocalTrainingParse(message) {
-        const patterns = [
-            /^(.+?)\s+(\d+(?:\.\d+)?)\s*[kK][gG]\s+(\d+)\s*[组x×]\s*(\d+)\s*[个次reps]?$/,
-            /^(.+?)\s+(\d+(?:\.\d+)?)\s+(\d+)\s*[x×]\s*(\d+)$/,
-            /^(.+?)\s+自重\s+(\d+)\s*[组x×]\s*(\d+)\s*[个次reps]?$/,
-        ];
-
-        for (let i = 0; i < patterns.length; i++) {
-            const match = message.match(patterns[i]);
-            if (match) {
-                if (i === 2) {
-                    return {
-                        name: match[1].trim(),
-                        weight: 0,
-                        sets: parseInt(match[2]),
-                        reps: parseInt(match[3]),
-                        setDetails: this.generateSetDetails(0, parseInt(match[2]), parseInt(match[3]))
-                    };
-                } else {
-                    return {
-                        name: match[1].trim(),
-                        weight: parseFloat(match[2]),
-                        sets: parseInt(match[3]),
-                        reps: parseInt(match[4]),
-                        setDetails: this.generateSetDetails(parseFloat(match[2]), parseInt(match[3]), parseInt(match[4]))
-                    };
-                }
-            }
-        }
-        return null;
-    },
-
     generateSetDetails(weight, sets, reps) {
         const details = [];
         for (let i = 0; i < sets; i++) {
@@ -618,7 +541,7 @@ const HomeModule = {
             sets: parsed.sets,
             reps: parsed.reps,
             volume: volume,
-            setDetails: parsed.setDetails || []
+            setDetails: parsed.setDetails || parsed.set_details || []
         };
 
         const dayData = await Storage.getTrainingByDate(this.currentDate);

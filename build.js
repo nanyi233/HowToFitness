@@ -24,9 +24,8 @@ const cssFiles = [
     'shared/styles/components.css',
     'modules/food/food.css',
     'modules/training/training.css',
-    'modules/aerobic/aerobic.css',
-    'modules/plan/plan.css',
-    'modules/stats/stats.css',
+    'modules/home/home.css',
+    'modules/auth/auth.css',
     'modules/profile/profile.css',
 ];
 const allCSS = cssFiles.map(function(f) { return '/* === ' + f + ' === */\n' + read(f); }).join('\n\n');
@@ -37,25 +36,22 @@ const jsFiles = [
     'shared/js/storage.js',
     'shared/js/api.js',
     'shared/js/utils.js',
-    'modules/food/food-database.js',
     'modules/food/food.js',
+    'modules/home/home.js',
     'modules/training/training.js',
-    'modules/stats/stats.js',
     'modules/profile/profile.js',
-    'modules/aerobic/aerobic.js',
-    'modules/plan/plan.js',
+    'modules/auth/auth.js',
 ];
 const allJS = jsFiles.map(function(f) { return '// === ' + f + ' ===\n' + read(f); }).join('\n\n');
 
 // ============== Collect module HTML templates ==============
-const moduleNames = ['food', 'training', 'aerobic', 'plan', 'stats', 'profile'];
+const moduleNames = ['home', 'food', 'training', 'profile', 'auth'];
 const moduleHtmlPaths = {
+    home: 'modules/home/home.html',
     food: 'modules/food/food.html',
     training: 'modules/training/training.html',
-    aerobic: 'modules/aerobic/aerobic.html',
-    plan: 'modules/plan/plan.html',
-    stats: 'modules/stats/stats.html',
     profile: 'modules/profile/profile.html',
+    auth: 'modules/auth/auth.html',
 };
 
 var templateTags = moduleNames.map(function(name) {
@@ -73,12 +69,11 @@ var bootstrapJS = [
     '        pageContainer: null,',
     '',
     '        modules: {',
+    '            home:     { tpl: "tpl-home",     instance: window.HomeModule },',
     '            food:     { tpl: "tpl-food",     instance: window.FoodModule },',
     '            training: { tpl: "tpl-training", instance: window.TrainingModule },',
-    '            aerobic:  { tpl: "tpl-aerobic",  instance: window.AerobicModule },',
-    '            plan:     { tpl: "tpl-plan",     instance: window.PlanModule },',
-    '            stats:    { tpl: "tpl-stats",    instance: window.StatsModule },',
-    '            profile:  { tpl: "tpl-profile",  instance: window.ProfileModule }',
+    '            profile:  { tpl: "tpl-profile",  instance: window.ProfileModule },',
+    '            auth:     { tpl: "tpl-auth",     instance: window.AuthModule }',
     '        },',
     '',
     '        init: function() {',
@@ -93,7 +88,7 @@ var bootstrapJS = [
     '            });',
     '',
     '            var hash = window.location.hash.replace("#", "");',
-    '            var initial = hash && this.modules[hash] ? hash : "food";',
+    '            var initial = hash && this.modules[hash] ? hash : "home";',
     '            this.navigate(initial);',
     '',
     '            window.addEventListener("hashchange", function() {',
@@ -167,25 +162,17 @@ parts.push('            <p class="empty-message" style="margin-top: 40vh;">Loadi
 parts.push('        </div>');
 parts.push('');
 parts.push('        <nav class="tab-bar">');
-parts.push('            <button class="tab-bar-item active" data-module="food">');
+parts.push('            <button class="tab-bar-item active" data-module="home">');
+parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>');
+parts.push('                <span>Home</span>');
+parts.push('            </button>');
+parts.push('            <button class="tab-bar-item" data-module="food">');
 parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>');
 parts.push('                <span>Diet</span>');
 parts.push('            </button>');
 parts.push('            <button class="tab-bar-item" data-module="training">');
 parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 2v4"/><path d="M12 18v4"/><rect x="2" y="6" width="4" height="12" rx="1"/><rect x="18" y="6" width="4" height="12" rx="1"/></svg>');
 parts.push('                <span>Train</span>');
-parts.push('            </button>');
-parts.push('            <button class="tab-bar-item" data-module="aerobic">');
-parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><path d="m6.5 8 3.5 2v4l-3 5"/><path d="m17.5 8-3.5 2v4l3 5"/></svg>');
-parts.push('                <span>Aerobic</span>');
-parts.push('            </button>');
-parts.push('            <button class="tab-bar-item" data-module="plan">');
-parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>');
-parts.push('                <span>Plan</span>');
-parts.push('            </button>');
-parts.push('            <button class="tab-bar-item" data-module="stats">');
-parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>');
-parts.push('                <span>Stats</span>');
 parts.push('            </button>');
 parts.push('            <button class="tab-bar-item" data-module="profile">');
 parts.push('                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>');

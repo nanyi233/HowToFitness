@@ -50,13 +50,13 @@
     <script src="shared/js/utils.js"></script>
 
     <!-- Module JS (loaded eagerly, small enough) -->
-    <script src="modules/food/food-database.js"></script>
     <script src="modules/food/food.js"></script>
     <script src="modules/home/home.js?v=2"></script>
     <script src="modules/training/training.js"></script>
 
     <script src="modules/profile/profile.js"></script>
     <script src="modules/auth/auth.js"></script>
+    <script src="modules/onboarding/onboarding.js"></script>
 
 
     <!-- App Bootstrap -->
@@ -72,11 +72,12 @@
         isAuthenticated: false,
 
         modules: {
-            auth:     { html: 'modules/auth/auth.html',         css: 'modules/auth/auth.css',         instance: window.AuthModule },
-            home:     { html: 'modules/home/home.html',         css: 'modules/home/home.css',         instance: window.HomeModule },
-            food:     { html: 'modules/food/food.html',         css: 'modules/food/food.css',         instance: window.FoodModule },
-            training: { html: 'modules/training/training.html', css: 'modules/training/training.css', instance: window.TrainingModule },
-            profile:  { html: 'modules/profile/profile.html',   css: 'modules/profile/profile.css',   instance: window.ProfileModule }
+            auth:       { html: 'modules/auth/auth.html',             css: 'modules/auth/auth.css',             instance: window.AuthModule },
+            onboarding: { html: 'modules/onboarding/onboarding.html', css: 'modules/onboarding/onboarding.css', instance: window.OnboardingModule },
+            home:       { html: 'modules/home/home.html',             css: 'modules/home/home.css',             instance: window.HomeModule },
+            food:       { html: 'modules/food/food.html',             css: 'modules/food/food.css',             instance: window.FoodModule },
+            training:   { html: 'modules/training/training.html',     css: 'modules/training/training.css',     instance: window.TrainingModule },
+            profile:    { html: 'modules/profile/profile.html',       css: 'modules/profile/profile.css',       instance: window.ProfileModule }
         },
 
         init() {
@@ -95,6 +96,7 @@
             EventBus.on('auth:success', () => this.onAuthSuccess());
             EventBus.on('auth:logout', () => this.onAuthLogout());
             EventBus.on('auth:expired', () => this.onAuthLogout());
+            EventBus.on('onboarding:complete', () => this.onOnboardingComplete());
 
             // Check auth state and decide initial route
             this.checkAuthAndRoute();
@@ -103,7 +105,7 @@
                 const mod = window.location.hash.replace('#', '');
                 if (mod && this.modules[mod] && mod !== this.currentModule) {
                     // Prevent navigating to app pages when not authenticated
-                    if (mod !== 'auth' && !this.isAuthenticated) {
+                    if (mod !== 'auth' && mod !== 'onboarding' && !this.isAuthenticated) {
                         this.navigate('auth');
                         return;
                     }
@@ -122,9 +124,17 @@
 
             if (hasToken || isLocalMode) {
                 this.isAuthenticated = true;
+
+                // Check if onboarding is needed (first time user)
+                if (this.needsOnboarding()) {
+                    this.showTabBar(false);
+                    this.navigate('onboarding');
+                    return;
+                }
+
                 this.showTabBar(true);
                 const hash = window.location.hash.replace('#', '');
-                const initial = hash && this.modules[hash] && hash !== 'auth' ? hash : 'home';
+                const initial = hash && this.modules[hash] && hash !== 'auth' && hash !== 'onboarding' ? hash : 'home';
                 this.navigate(initial);
             } else {
                 // Show auth page
@@ -134,8 +144,38 @@
             }
         },
 
+        /**
+         * Check if user needs onboarding (no profile data yet).
+         */
+        needsOnboarding() {
+            const onboardingDone = localStorage.getItem('htf_onboarding_done') === 'true';
+            if (onboardingDone) return false;
+
+            const profile = Storage.getUserProfile();
+            if (profile && profile.onboardingCompleted) return false;
+
+            // Also check if plan data exists (user may have set up previously)
+            const planData = Storage.getPlanData();
+            if (planData && planData.height && planData.weight) return false;
+
+            return true;
+        },
+
         onAuthSuccess() {
             this.isAuthenticated = true;
+
+            // Check if onboarding is needed after auth
+            if (this.needsOnboarding()) {
+                this.showTabBar(false);
+                this.navigate('onboarding');
+                return;
+            }
+
+            this.showTabBar(true);
+            this.navigate('home');
+        },
+
+        onOnboardingComplete() {
             this.showTabBar(true);
             this.navigate('home');
         },
@@ -202,8 +242,8 @@
                 config.instance.init();
             }
 
-            // Update tab bar (skip for auth page)
-            if (moduleName !== 'auth') {
+            // Update tab bar (skip for auth and onboarding pages)
+            if (moduleName !== 'auth' && moduleName !== 'onboarding') {
                 document.querySelectorAll('.tab-bar-item').forEach(b => b.classList.remove('active'));
                 const activeTab = document.querySelector(`.tab-bar-item[data-module="${moduleName}"]`);
                 if (activeTab) activeTab.classList.add('active');

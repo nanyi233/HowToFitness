@@ -125,6 +125,118 @@ const API = {
             role: msg.type === 'user' ? 'user' : 'assistant',
             content: msg.content
         }));
+    },
+
+    // ── Backend Calculator API ──────────────────────────────────────
+
+    /**
+     * Search for a food in the backend database.
+     * @param {string} foodName
+     * @returns {object|null} Food info with name, calories, protein, carbs, fat
+     */
+    async searchFood(foodName) {
+        const res = await fetch(`${API_CONFIG.backendBaseUrl}/calc/food-search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ food_name: foodName })
+        });
+        if (!res.ok) return null;
+        return res.json();
+    },
+
+    /**
+     * Calculate nutrition for a food and given grams.
+     * @param {string} foodName
+     * @param {number} grams
+     * @returns {object} Nutrition result
+     */
+    async calculateNutrition(foodName, grams) {
+        const res = await fetch(`${API_CONFIG.backendBaseUrl}/calc/food-nutrition`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ food_name: foodName, grams })
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Food not found');
+        }
+        return res.json();
+    },
+
+    /**
+     * Detect whether user input is food or training.
+     * @param {string} message
+     * @returns {object} { type: 'food'|'training'|'unknown' }
+     */
+    async detectInput(message) {
+        const res = await fetch(`${API_CONFIG.backendBaseUrl}/calc/detect-input`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message })
+        });
+        if (!res.ok) return { type: 'unknown' };
+        return res.json();
+    },
+
+    /**
+     * Try to parse training input locally on the backend.
+     * @param {string} message
+     * @returns {object} { success, exercise }
+     */
+    async parseTrainingLocal(message) {
+        const res = await fetch(`${API_CONFIG.backendBaseUrl}/calc/parse-training-local`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message })
+        });
+        if (!res.ok) return { success: false };
+        return res.json();
+    },
+
+    /**
+     * Calculate BMI, BMR, TDEE, macros plan.
+     * @param {object} params - { gender, height_cm, weight_kg, age, training_level, aerobic_calories }
+     * @returns {object} Plan calculation result
+     */
+    async calculatePlan(params) {
+        const res = await fetch(`${API_CONFIG.backendBaseUrl}/calc/plan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Calculation failed');
+        }
+        return res.json();
+    },
+
+    /**
+     * Calculate aerobic exercise calories.
+     * @param {object} params - { weight_kg, category, level_index, hours, minutes, frequency }
+     * @returns {object} Aerobic calculation result
+     */
+    async calculateAerobic(params) {
+        const res = await fetch(`${API_CONFIG.backendBaseUrl}/calc/aerobic`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Calculation failed');
+        }
+        return res.json();
+    },
+
+    /**
+     * Get all exercise categories from backend.
+     * @returns {Array} Exercise categories with levels
+     */
+    async getExerciseCategories() {
+        const res = await fetch(`${API_CONFIG.backendBaseUrl}/calc/exercise-categories`);
+        if (!res.ok) return [];
+        return res.json();
     }
 };
 

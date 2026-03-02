@@ -218,23 +218,22 @@ const FoodModule = {
 
         const foodName = match[1].trim();
         const grams = parseFloat(match[2]);
-        const foodData = searchFood(foodName);
 
-        if (!foodData) {
+        try {
+            const nutrition = await API.calculateNutrition(foodName, grams);
+            await Storage.addFood(this.currentDate, nutrition);
+            await this.loadDayData();
+
+            this.addMessage(
+                `✅ 已添加：<strong>${nutrition.name}</strong> ${grams}g<br>` +
+                `🔥 ${nutrition.calories}kcal · 🥩 ${nutrition.protein}g蛋白 · 🍚 ${nutrition.carbs}g碳水 · 🥑 ${nutrition.fat}g脂肪`,
+                'bot', 'success'
+            );
+        } catch (e) {
+            // Food not in local DB, fall back to AI
             this.addMessage(`🤖 本地数据库未找到"${foodName}"，正在使用AI查询营养信息...`, 'bot', 'info');
             await this.getAINutritionInfo(foodName, grams);
-            return;
         }
-
-        const nutrition = calculateNutrition(foodData, grams);
-        await Storage.addFood(this.currentDate, nutrition);
-        await this.loadDayData();
-
-        this.addMessage(
-            `✅ 已添加：<strong>${nutrition.name}</strong> ${grams}g<br>` +
-            `🔥 ${nutrition.calories}kcal · 🥩 ${nutrition.protein}g蛋白 · 🍚 ${nutrition.carbs}g碳水 · 🥑 ${nutrition.fat}g脂肪`,
-            'bot', 'success'
-        );
     },
 
     async handleAIFoodInput(message) {

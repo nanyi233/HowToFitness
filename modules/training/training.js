@@ -192,7 +192,7 @@ const TrainingModule = {
 
     // ==================== Message Processing ====================
 
-    processMessage(message) {
+    async processMessage(message) {
         const lower = message.toLowerCase();
 
         if (lower === '汇总' || lower === '总结') { this.showSummary(); return; }
@@ -205,46 +205,18 @@ const TrainingModule = {
             return;
         }
 
-        const parsed = this.tryLocalParse(message);
-        if (parsed) {
-            this.addExercise(parsed);
-            return;
+        // Try backend local parse first
+        try {
+            const parseResult = await API.parseTrainingLocal(message);
+            if (parseResult.success && parseResult.exercise) {
+                this.addExercise(parseResult.exercise);
+                return;
+            }
+        } catch (e) {
+            console.error('Local parse failed:', e);
         }
 
         this.handleAITrainingInput(message);
-    },
-
-    tryLocalParse(message) {
-        const patterns = [
-            /^(.+?)\s+(\d+(?:\.\d+)?)\s*[kK][gG]\s+(\d+)\s*[组x×]\s*(\d+)\s*[个次reps]?$/,
-            /^(.+?)\s+(\d+(?:\.\d+)?)\s+(\d+)\s*[x×]\s*(\d+)$/,
-            /^(.+?)\s+自重\s+(\d+)\s*[组x×]\s*(\d+)\s*[个次reps]?$/,
-        ];
-
-        for (let i = 0; i < patterns.length; i++) {
-            const match = message.match(patterns[i]);
-            if (match) {
-                if (i === 2) {
-                    return {
-                        name: match[1].trim(),
-                        weight: 0,
-                        sets: parseInt(match[2]),
-                        reps: parseInt(match[3]),
-                        setDetails: this.generateSetDetails(0, parseInt(match[2]), parseInt(match[3]))
-                    };
-                } else {
-                    return {
-                        name: match[1].trim(),
-                        weight: parseFloat(match[2]),
-                        sets: parseInt(match[3]),
-                        reps: parseInt(match[4]),
-                        setDetails: this.generateSetDetails(parseFloat(match[2]), parseInt(match[3]), parseInt(match[4]))
-                    };
-                }
-            }
-        }
-
-        return null;
     },
 
     generateSetDetails(weight, sets, reps) {
@@ -263,7 +235,7 @@ const TrainingModule = {
             sets: parsed.sets,
             reps: parsed.reps,
             volume: volume,
-            setDetails: parsed.setDetails || []
+            setDetails: parsed.setDetails || parsed.set_details || []
         };
 
         // Check if this exercise already exists today (merge detection)

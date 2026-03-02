@@ -1,43 +1,18 @@
 /**
  * Profile Module — includes Weight Tracking, Aerobic Calculator, Fat Loss Plan
+ * Business logic (aerobic data, plan calculation) now served by backend API.
  */
 
-// ==================== Aerobic Exercise Data ====================
-const EXERCISE_DATA = {
-    "平地走": { icon: "🚶", levels: [{ name: "每走一万步", perKg: 3.8, note: "约1小时" }, { name: "每走一小时", perKg: 3.8, note: "" }] },
-    "爬坡走": { icon: "⛰️", levels: [{ name: "坡度5°（一般选择）", perKg: 5.5, note: "" }, { name: "坡度10°（很累）", perKg: 8.0, note: "" }] },
-    "跑步": { icon: "🏃", levels: [{ name: "速度6km/h", perKg: 5.5, note: "慢跑" }, { name: "速度7km/h", perKg: 7.2, note: "" }, { name: "速度8km/h", perKg: 9.5, note: "" }, { name: "速度9km/h", perKg: 9.6, note: "" }, { name: "速度10km/h", perKg: 9.8, note: "" }, { name: "速度12km/h", perKg: 10.1, note: "" }, { name: "速度13km/h", perKg: 10.1, note: "" }, { name: "速度14km/h", perKg: 10.4, note: "" }, { name: "速度15km/h", perKg: 10.9, note: "" }, { name: "速度16km/h", perKg: 12.7, note: "快跑" }] },
-    "户外骑行": { icon: "🚴", levels: [{ name: "速度10km/h", perKg: 3.6, note: "通勤" }, { name: "速度12km/h", perKg: 3.9, note: "通勤" }, { name: "速度13km/h", perKg: 4.4, note: "通勤" }, { name: "速度15km/h", perKg: 5.5, note: "通勤" }, { name: "速度18km/h", perKg: 6.5, note: "通勤" }, { name: "速度27km/h", perKg: 7.5, note: "专业" }, { name: "速度31km/h", perKg: 10.0, note: "专业" }, { name: "速度34km/h", perKg: 12.0, note: "专业" }] },
-    "室内单车": { icon: "🚲", levels: [{ name: "功率50-90W", perKg: 4.8, note: "轻松" }, { name: "功率90-100W", perKg: 6.8, note: "" }, { name: "功率100-160W", perKg: 8.8, note: "" }, { name: "功率160-200W", perKg: 11.0, note: "" }, { name: "功率200-270W", perKg: 14.0, note: "剧烈" }] },
-    "游泳": { icon: "🏊", levels: [{ name: "速度1km/h", perKg: 4.2, note: "休闲" }, { name: "速度2km/h", perKg: 7.7, note: "" }, { name: "速度3km/h", perKg: 9.2, note: "快速" }] },
-    "球类运动": { icon: "⚽", levels: [{ name: "篮球", perKg: 6.1, note: "" }, { name: "足球", perKg: 7.0, note: "" }, { name: "排球", perKg: 4.1, note: "" }, { name: "网球", perKg: 8.9, note: "" }, { name: "乒乓球", perKg: 6.6, note: "" }, { name: "羽毛球", perKg: 7.4, note: "" }] },
-    "跳操跟练": { icon: "💃", levels: [{ name: "轻松强度", perKg: 2.3, note: "" }, { name: "中等强度", perKg: 4.0, note: "" }, { name: "剧烈强度", perKg: 6.0, note: "" }] },
-    "室内其他": { icon: "🧘", levels: [{ name: "瑜伽", perKg: 3.1, note: "" }, { name: "舞蹈", perKg: 5.0, note: "" }, { name: "椭圆仪", perKg: 5.0, note: "" }, { name: "普拉提", perKg: 3.0, note: "" }, { name: "健身环", perKg: 5.0, note: "" }] },
-    "爬楼": { icon: "🪜", levels: [{ name: "上楼", perKg: 8.0, note: "90步/分钟" }, { name: "下楼", perKg: 3.1, note: "" }] },
-    "划船机": { icon: "🚣", levels: [{ name: "功率100W", perKg: 7.0, note: "" }, { name: "功率150W", perKg: 8.5, note: "" }, { name: "功率200W", perKg: 12.0, note: "" }] },
-    "拳击": { icon: "🥊", levels: [{ name: "打沙袋", perKg: 5.5, note: "" }, { name: "真人格斗", perKg: 7.8, note: "" }] },
-    "跳绳": { icon: "🪢", levels: [{ name: "<100次/分钟", perKg: 8.8, note: "慢速" }, { name: "100-120次/分钟", perKg: 11.8, note: "" }, { name: "120-160次/分钟", perKg: 12.3, note: "快速" }] }
-};
+// Cached exercise categories from backend
+let _exerciseCategories = null;
 
-const FOOD_EQUIVALENTS = [
-    { name: "熟米饭", amount: 80, unit: "g", icon: "🍚" },
+const FOOD_EQUIVALENTS = [    { name: "熟米饭", amount: 80, unit: "g", icon: "🍚" },
     { name: "瘦熟肉", amount: 80, unit: "g", icon: "🥩" },
     { name: "苹果/香蕉", amount: 1, unit: "个", icon: "🍎" },
     { name: "鸡蛋", amount: 1.5, unit: "个", icon: "🥚" },
     { name: "全脂牛奶", amount: 200, unit: "ml", icon: "🥛" },
     { name: "坚果", amount: 20, unit: "g", icon: "🥜" }
 ];
-
-function calculateAerobicCalories(weight, perKg) {
-    let baseCalories = weight * perKg;
-    if (weight > 80) {
-        const excessWeight = weight - 80;
-        const reductionSteps = Math.floor(excessWeight / 5);
-        const reductionFactor = Math.pow(0.97, reductionSteps);
-        baseCalories = baseCalories * reductionFactor;
-    }
-    return Math.round(baseCalories);
-}
 
 const ProfileModule = {
     weightChart: null,
@@ -239,16 +214,27 @@ const ProfileModule = {
         // Will be fully initialized when section is opened
     },
 
-    populateCategories() {
+    async populateCategories() {
         const categorySelect = document.getElementById('exerciseCategory');
         if (!categorySelect || categorySelect.options.length > 1) return;
-        categorySelect.innerHTML = '<option value="">请选择运动类型</option>';
-        for (const [category, data] of Object.entries(EXERCISE_DATA)) {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = `${data.icon} ${category}`;
-            categorySelect.appendChild(option);
+
+        // Fetch categories from backend
+        if (!_exerciseCategories) {
+            try {
+                _exerciseCategories = await API.getExerciseCategories();
+            } catch (e) {
+                console.error('Failed to load exercise categories:', e);
+                _exerciseCategories = [];
+            }
         }
+
+        categorySelect.innerHTML = '<option value="">请选择运动类型</option>';
+        _exerciseCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.name;
+            option.textContent = `${cat.icon} ${cat.name}`;
+            categorySelect.appendChild(option);
+        });
 
         categorySelect.addEventListener('change', (e) => {
             this.populateLevels(e.target.value);
@@ -272,14 +258,19 @@ const ProfileModule = {
     populateLevels(category) {
         const levelSelect = document.getElementById('exerciseLevel');
         if (!levelSelect) return;
-        if (!category || !EXERCISE_DATA[category]) {
+        if (!category || !_exerciseCategories) {
             levelSelect.innerHTML = '<option value="">请先选择运动类型</option>';
             levelSelect.disabled = true;
             return;
         }
-        const data = EXERCISE_DATA[category];
+        const cat = _exerciseCategories.find(c => c.name === category);
+        if (!cat) {
+            levelSelect.innerHTML = '<option value="">请先选择运动类型</option>';
+            levelSelect.disabled = true;
+            return;
+        }
         levelSelect.innerHTML = '<option value="">请选择强度/速度</option>';
-        data.levels.forEach((level, index) => {
+        cat.levels.forEach((level, index) => {
             const option = document.createElement('option');
             option.value = index;
             option.textContent = level.name + (level.note ? ` (${level.note})` : '');
@@ -288,7 +279,7 @@ const ProfileModule = {
         levelSelect.disabled = false;
     },
 
-    calculateAerobic() {
+    async calculateAerobic() {
         const weight = parseFloat(document.getElementById('aeroWeight')?.value);
         const category = document.getElementById('exerciseCategory')?.value;
         const levelIndex = document.getElementById('exerciseLevel')?.value;
@@ -301,16 +292,20 @@ const ProfileModule = {
             return;
         }
 
-        const level = EXERCISE_DATA[category].levels[levelIndex];
-        const totalHours = hours + minutes / 60;
-
-        const hourlyCalories = calculateAerobicCalories(weight, level.perKg);
-        const singleCalories = Math.round(hourlyCalories * totalHours);
-        const weeklyCalories = singleCalories * frequency;
-        const dailyAvgCalories = Math.round(weeklyCalories / 7);
-
-        this.displayAerobicResults({ hourlyCalories, singleCalories, weeklyCalories, dailyAvgCalories });
-        this.saveAerobicData();
+        try {
+            const results = await API.calculateAerobic({
+                weight_kg: weight,
+                category: category,
+                level_index: parseInt(levelIndex),
+                hours: hours,
+                minutes: minutes,
+                frequency: frequency
+            });
+            this.displayAerobicResults(results);
+            this.saveAerobicData();
+        } catch (e) {
+            alert('计算失败：' + e.message);
+        }
     },
 
     displayAerobicResults(results) {
@@ -318,15 +313,16 @@ const ProfileModule = {
         if (card) card.style.display = 'block';
 
         const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        setEl('hourlyCalories', results.hourlyCalories);
-        setEl('singleCalories', results.singleCalories);
-        setEl('weeklyCalories', results.weeklyCalories);
-        setEl('dailyAvgCalories', results.dailyAvgCalories);
-        setEl('planValue', results.dailyAvgCalories);
+        setEl('hourlyCalories', results.hourly_calories || results.hourlyCalories);
+        setEl('singleCalories', results.single_calories || results.singleCalories);
+        setEl('weeklyCalories', results.weekly_calories || results.weeklyCalories);
+        setEl('dailyAvgCalories', results.daily_avg_calories || results.dailyAvgCalories);
+        setEl('planValue', results.daily_avg_calories || results.dailyAvgCalories);
 
         const foodGrid = document.getElementById('foodEquivalent');
         if (foodGrid) {
-            const multiplier = results.dailyAvgCalories / 100;
+            const dailyAvg = results.daily_avg_calories || results.dailyAvgCalories;
+            const multiplier = dailyAvg / 100;
             foodGrid.innerHTML = FOOD_EQUIVALENTS.map(food => {
                 const amount = Math.round(food.amount * multiplier * 10) / 10;
                 return `<div class="food-equiv-item"><span>${food.icon}</span><span class="amount">${amount}${food.unit}</span><span>${food.name}</span></div>`;
@@ -427,7 +423,7 @@ const ProfileModule = {
         Storage.savePlanData(data);
     },
 
-    calculatePlan() {
+    async calculatePlan() {
         this.savePlanData();
         const gender = document.getElementById('planGender')?.value;
         const height = parseFloat(document.getElementById('planHeight')?.value) || 0;
@@ -441,36 +437,20 @@ const ProfileModule = {
             return;
         }
 
-        const heightM = height / 100;
-        const bmi = weight / (heightM * heightM);
-
-        let bmr;
-        if (gender === 'male') {
-            bmr = weight * 9.99 + height * 6.25 - age * 4.92 + 5;
-        } else {
-            bmr = weight * 9.99 + height * 6.25 - age * 4.92 - 161;
+        try {
+            const result = await API.calculatePlan({
+                gender,
+                height_cm: height,
+                weight_kg: weight,
+                age,
+                training_level: trainingLevel,
+                aerobic_calories: aerobicCalories
+            });
+            this.planResults = result;
+            this.displayPlanResults();
+        } catch (e) {
+            alert('计算失败：' + e.message);
         }
-
-        const tdee = bmr / 0.7;
-
-        const trainingCaloriesMap = {
-            male: { beginner: 150, intermediate: 200, advanced: 250 },
-            female: { beginner: 100, intermediate: 150, advanced: 200 }
-        };
-        const trainingCalories = trainingCaloriesMap[gender][trainingLevel];
-
-        const balanceTraining = tdee + trainingCalories + aerobicCalories;
-        const balanceRest = tdee + aerobicCalories;
-        const intakeTraining = balanceTraining * 0.64;
-        const intakeRest = balanceRest * 0.64;
-
-        const carbTraining = weight * 2.6;
-        const carbRest = weight * 2.1;
-        const protein = weight * 1.4;
-        const fat = gender === 'male' ? (weight >= 120 ? 70 : 60) : 50;
-
-        this.planResults = { bmi, bmr, tdee, trainingCalories, balanceTraining, balanceRest, intakeTraining, intakeRest, carbTraining, carbRest, protein, fat };
-        this.displayPlanResults();
     },
 
     displayPlanResults() {
@@ -482,28 +462,29 @@ const ProfileModule = {
 
         const bmiEl = document.getElementById('resultBMI');
         const bmiStatusEl = document.getElementById('bmiStatus');
-        if (bmiEl) bmiEl.textContent = r.bmi.toFixed(1);
+        if (bmiEl) bmiEl.textContent = typeof r.bmi === 'number' ? r.bmi.toFixed ? r.bmi.toFixed(1) : r.bmi : r.bmi;
         if (bmiStatusEl) {
+            const bmiVal = parseFloat(r.bmi);
             let status = '', cls = 'normal';
-            if (r.bmi < 18.5) { status = '偏瘦'; cls = 'warning'; }
-            else if (r.bmi < 24) { status = '正常'; cls = 'normal'; }
-            else if (r.bmi < 28) { status = '超重'; cls = 'warning'; }
+            if (bmiVal < 18.5) { status = '偏瘦'; cls = 'warning'; }
+            else if (bmiVal < 24) { status = '正常'; cls = 'normal'; }
+            else if (bmiVal < 28) { status = '超重'; cls = 'warning'; }
             else { status = '肥胖'; cls = 'danger'; }
             bmiStatusEl.textContent = status;
             bmiStatusEl.className = `status ${cls}`;
         }
 
-        setEl('resultBMR', Math.round(r.bmr));
-        setEl('resultTDEE', Math.round(r.tdee));
-        setEl('resultTraining', r.trainingCalories);
-        setEl('balanceTraining', Math.round(r.balanceTraining) + ' 大卡');
-        setEl('balanceRest', Math.round(r.balanceRest) + ' 大卡');
-        setEl('intakeTraining', Math.round(r.intakeTraining) + ' 大卡');
-        setEl('intakeRest', Math.round(r.intakeRest) + ' 大卡');
-        setEl('carbTraining', Math.round(r.carbTraining) + 'g');
-        setEl('carbRest', Math.round(r.carbRest) + 'g');
-        setEl('proteinTraining', Math.round(r.protein) + 'g');
-        setEl('proteinRest', Math.round(r.protein) + 'g');
+        setEl('resultBMR', r.bmr);
+        setEl('resultTDEE', r.tdee);
+        setEl('resultTraining', r.training_calories || r.trainingCalories);
+        setEl('balanceTraining', (r.balance_training || r.balanceTraining) + ' 大卡');
+        setEl('balanceRest', (r.balance_rest || r.balanceRest) + ' 大卡');
+        setEl('intakeTraining', (r.intake_training || r.intakeTraining) + ' 大卡');
+        setEl('intakeRest', (r.intake_rest || r.intakeRest) + ' 大卡');
+        setEl('carbTraining', (r.carb_training || r.carbTraining) + 'g');
+        setEl('carbRest', (r.carb_rest || r.carbRest) + 'g');
+        setEl('proteinTraining', (r.protein) + 'g');
+        setEl('proteinRest', (r.protein) + 'g');
         setEl('fatTraining', r.fat + 'g');
         setEl('fatRest', r.fat + 'g');
     },
@@ -518,7 +499,9 @@ const ProfileModule = {
     },
 
     generateMealPlan() {
-        const { carbTraining, carbRest, protein } = this.planResults;
+        const carbTraining = this.planResults.carb_training || this.planResults.carbTraining;
+        const carbRest = this.planResults.carb_rest || this.planResults.carbRest;
+        const protein = this.planResults.protein;
         if (!carbTraining) return;
 
         const trainingMeals = [
