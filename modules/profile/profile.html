@@ -7,8 +7,8 @@
     <div class="avatar-ring">
         <span class="avatar-emoji">🏋️</span>
     </div>
-    <h2 class="profile-name">HowToFitness</h2>
-    <span class="profile-badge">Weight Loss</span>
+    <h2 class="profile-name" id="profileDisplayName">HowToFitness</h2>
+    <span class="profile-badge" id="profileModeBadge">Weight Loss</span>
 </div>
 
 <div class="profile-stats-row">
@@ -272,6 +272,13 @@
     <div class="profile-menu-item" onclick="ProfileModule.clearChatHistory()">
         <span class="pmi-icon">🗑️</span>
         <span class="pmi-text">清除聊天记录</span>
+        <span class="pmi-arrow">›</span>
+    </div>
+
+    <!-- Auth: Logout / Switch to Backend -->
+    <div class="profile-menu-item" id="authMenuItem" onclick="ProfileModule.handleAuthAction()">
+        <span class="pmi-icon" id="authMenuIcon">🔓</span>
+        <span class="pmi-text" id="authMenuText">登录 / 注册</span>
         <span class="pmi-arrow">›</span>
     </div>
 </div>

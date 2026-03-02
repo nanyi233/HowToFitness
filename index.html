@@ -56,6 +56,7 @@
     <script src="modules/training/training.js"></script>
 
     <script src="modules/profile/profile.js"></script>
+    <script src="modules/auth/auth.js"></script>
 
 
     <!-- App Bootstrap -->
@@ -67,9 +68,12 @@
     const AppRouter = {
         currentModule: null,
         pageContainer: null,
+        tabBar: null,
+        isAuthenticated: false,
 
         modules: {
-            home:     { html: 'modules/home/home.html',           css: 'modules/home/home.css',         instance: window.HomeModule },
+            auth:     { html: 'modules/auth/auth.html',         css: 'modules/auth/auth.css',         instance: window.AuthModule },
+            home:     { html: 'modules/home/home.html',         css: 'modules/home/home.css',         instance: window.HomeModule },
             food:     { html: 'modules/food/food.html',         css: 'modules/food/food.css',         instance: window.FoodModule },
             training: { html: 'modules/training/training.html', css: 'modules/training/training.css', instance: window.TrainingModule },
             profile:  { html: 'modules/profile/profile.html',   css: 'modules/profile/profile.css',   instance: window.ProfileModule }
@@ -77,6 +81,7 @@
 
         init() {
             this.pageContainer = document.getElementById('page-container');
+            this.tabBar = document.querySelector('.tab-bar');
 
             // Tab bar click handlers
             document.querySelectorAll('.tab-bar-item').forEach(btn => {
@@ -86,17 +91,71 @@
                 });
             });
 
-            // Hash-based routing
-            const hash = window.location.hash.replace('#', '');
-            const initial = hash && this.modules[hash] ? hash : 'home';
-            this.navigate(initial);
+            // Listen for auth events
+            EventBus.on('auth:success', () => this.onAuthSuccess());
+            EventBus.on('auth:logout', () => this.onAuthLogout());
+            EventBus.on('auth:expired', () => this.onAuthLogout());
+
+            // Check auth state and decide initial route
+            this.checkAuthAndRoute();
 
             window.addEventListener('hashchange', () => {
                 const mod = window.location.hash.replace('#', '');
                 if (mod && this.modules[mod] && mod !== this.currentModule) {
+                    // Prevent navigating to app pages when not authenticated
+                    if (mod !== 'auth' && !this.isAuthenticated) {
+                        this.navigate('auth');
+                        return;
+                    }
                     this.navigate(mod);
                 }
             });
+        },
+
+        /**
+         * Check if user is logged in (backend token) or using local mode,
+         * then route to auth page or main app accordingly.
+         */
+        checkAuthAndRoute() {
+            const hasToken = Storage.isLoggedIn();
+            const isLocalMode = localStorage.getItem('htf_local_mode') === 'true';
+
+            if (hasToken || isLocalMode) {
+                this.isAuthenticated = true;
+                this.showTabBar(true);
+                const hash = window.location.hash.replace('#', '');
+                const initial = hash && this.modules[hash] && hash !== 'auth' ? hash : 'home';
+                this.navigate(initial);
+            } else {
+                // Show auth page
+                this.isAuthenticated = false;
+                this.showTabBar(false);
+                this.navigate('auth');
+            }
+        },
+
+        onAuthSuccess() {
+            this.isAuthenticated = true;
+            this.showTabBar(true);
+            this.navigate('home');
+        },
+
+        onAuthLogout() {
+            this.isAuthenticated = false;
+            localStorage.removeItem('htf_local_mode');
+            this.showTabBar(false);
+            this.navigate('auth');
+        },
+
+        showTabBar(visible) {
+            if (this.tabBar) {
+                this.tabBar.style.display = visible ? '' : 'none';
+            }
+            // Adjust page container padding when tab bar is hidden
+            const appShell = document.querySelector('.app-shell');
+            if (appShell) {
+                appShell.style.paddingBottom = visible ? '' : '0';
+            }
         },
 
         async navigate(moduleName) {
@@ -143,10 +202,12 @@
                 config.instance.init();
             }
 
-            // Update tab bar
-            document.querySelectorAll('.tab-bar-item').forEach(b => b.classList.remove('active'));
-            const activeTab = document.querySelector(`.tab-bar-item[data-module="${moduleName}"]`);
-            if (activeTab) activeTab.classList.add('active');
+            // Update tab bar (skip for auth page)
+            if (moduleName !== 'auth') {
+                document.querySelectorAll('.tab-bar-item').forEach(b => b.classList.remove('active'));
+                const activeTab = document.querySelector(`.tab-bar-item[data-module="${moduleName}"]`);
+                if (activeTab) activeTab.classList.add('active');
+            }
 
             window.location.hash = moduleName;
             this.currentModule = moduleName;

@@ -1,0 +1,74 @@
+<!-- Auth Module — Login / Register -->
+<div class="auth-page">
+    <div class="auth-logo-area">
+        <div class="auth-logo-ring">
+            <span>💪</span>
+        </div>
+        <h1 class="auth-app-name">HowToFitness</h1>
+        <p class="auth-tagline">健康生活从记录开始</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-card" id="loginCard">
+        <h2 class="auth-card-title">登录</h2>
+        <form id="loginForm" autocomplete="off">
+            <div class="form-group">
+                <label for="loginUsername">用户名</label>
+                <input type="text" id="loginUsername" placeholder="请输入用户名" minlength="2" maxlength="50" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">密码</label>
+                <input type="password" id="loginPassword" placeholder="请输入密码" minlength="6" maxlength="128" required>
+            </div>
+            <div class="auth-error hidden" id="loginError"></div>
+            <button type="submit" class="btn-primary" id="loginBtn">
+                <span class="btn-text">登录</span>
+                <span class="btn-loading hidden">登录中...</span>
+            </button>
+        </form>
+        <div class="auth-switch">
+            <span>还没有账号？</span>
+            <a href="javascript:void(0)" onclick="AuthModule.showRegister()">立即注册</a>
+        </div>
+        <div class="auth-divider">
+            <span>或</span>
+        </div>
+        <button class="btn-local-mode" onclick="AuthModule.useLocalMode()">
+            📱 本地模式（无需登录）
+        </button>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-card hidden" id="registerCard">
+        <h2 class="auth-card-title">注册</h2>
+        <form id="registerForm" autocomplete="off">
+            <div class="form-group">
+                <label for="registerUsername">用户名</label>
+                <input type="text" id="registerUsername" placeholder="2-50个字符" minlength="2" maxlength="50" required>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">密码</label>
+                <input type="password" id="registerPassword" placeholder="至少6个字符" minlength="6" maxlength="128" required>
+            </div>
+            <div class="form-group">
+                <label for="registerConfirm">确认密码</label>
+                <input type="password" id="registerConfirm" placeholder="再次输入密码" minlength="6" maxlength="128" required>
+            </div>
+            <div class="auth-error hidden" id="registerError"></div>
+            <button type="submit" class="btn-primary" id="registerBtn">
+                <span class="btn-text">注册</span>
+                <span class="btn-loading hidden">注册中...</span>
+            </button>
+        </form>
+        <div class="auth-switch">
+            <span>已有账号？</span>
+            <a href="javascript:void(0)" onclick="AuthModule.showLogin()">返回登录</a>
+        </div>
+        <div class="auth-divider">
+            <span>或</span>
+        </div>
+        <button class="btn-local-mode" onclick="AuthModule.useLocalMode()">
+            📱 本地模式（无需登录）
+        </button>
+    </div>
+</div>

@@ -48,6 +48,7 @@ const ProfileModule = {
 
     init() {
         this.updateProfileStats();
+        this.updateAuthUI();
         this.initAerobicForm();
         this.initPlanForm();
     },
@@ -570,6 +571,57 @@ const ProfileModule = {
             Storage.clearChatHistory();
             Storage.clearTrainingChatHistory();
             alert('✅ 聊天记录已清除');
+        }
+    },
+
+    // ==================== Auth UI ====================
+
+    updateAuthUI() {
+        const nameEl = document.getElementById('profileDisplayName');
+        const badgeEl = document.getElementById('profileModeBadge');
+        const authIcon = document.getElementById('authMenuIcon');
+        const authText = document.getElementById('authMenuText');
+
+        if (Storage.isLoggedIn()) {
+            // Extract username from JWT token
+            let username = 'User';
+            try {
+                const payload = JSON.parse(atob(Storage.token.split('.')[1]));
+                username = payload.username || 'User';
+            } catch (e) { /* ignore */ }
+
+            if (nameEl) nameEl.textContent = username;
+            if (badgeEl) {
+                badgeEl.textContent = '☁️ 云端同步';
+                badgeEl.style.background = 'rgba(0,188,212,0.12)';
+                badgeEl.style.color = 'var(--accent)';
+            }
+            if (authIcon) authIcon.textContent = '🚪';
+            if (authText) authText.textContent = '退出登录';
+        } else {
+            const isLocalMode = localStorage.getItem('htf_local_mode') === 'true';
+            if (nameEl) nameEl.textContent = 'HowToFitness';
+            if (badgeEl) {
+                badgeEl.textContent = '📱 本地模式';
+                badgeEl.style.background = '';
+                badgeEl.style.color = '';
+            }
+            if (authIcon) authIcon.textContent = '🔓';
+            if (authText) authText.textContent = '登录 / 注册（开启云同步）';
+        }
+    },
+
+    handleAuthAction() {
+        if (Storage.isLoggedIn()) {
+            // Confirm logout
+            if (confirm('确定要退出登录吗？\n退出后将切换为本地模式。')) {
+                Storage.logout();
+                // EventBus 'auth:logout' will trigger AppRouter.onAuthLogout()
+            }
+        } else {
+            // Go to auth page: clear local mode flag and trigger auth flow
+            localStorage.removeItem('htf_local_mode');
+            window.EventBus && EventBus.emit('auth:logout');
         }
     }
 };
