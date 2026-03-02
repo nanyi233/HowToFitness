@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import init_db
-from app.routers import auth
+from app.routers import auth, diet, training, weight
 
 
 @asynccontextmanager
@@ -40,6 +40,9 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router)
+app.include_router(diet.router)
+app.include_router(training.router)
+app.include_router(weight.router)
 
 
 @app.get("/api/health")
