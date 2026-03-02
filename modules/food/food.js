@@ -252,7 +252,7 @@ const FoodModule = {
 注意：1. 如果用户没有说明克数，请根据常识估算合理的份量 2. 营养数据请尽量准确 3. 只返回JSON，不要有其他文字`;
 
         try {
-            const aiResponse = await API.callDeepSeek(message, systemPrompt);
+            const aiResponse = await API.callDeepSeek(message, systemPrompt, { type: 'food' });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {
@@ -298,7 +298,7 @@ const FoodModule = {
 注意：只返回JSON，不要有其他文字`;
 
         try {
-            const aiResponse = await API.callDeepSeek(`请提供"${foodName}"的营养信息`, systemPrompt);
+            const aiResponse = await API.callDeepSeek(`请提供"${foodName}"的营养信息`, systemPrompt, { type: 'food' });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {

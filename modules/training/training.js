@@ -345,7 +345,7 @@ const TrainingModule = {
 5. 只返回JSON`;
 
         try {
-            const aiResponse = await API.callDeepSeek(message, systemPrompt, { maxTokens: 800 });
+            const aiResponse = await API.callDeepSeek(message, systemPrompt, { maxTokens: 800, type: 'training' });
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {
