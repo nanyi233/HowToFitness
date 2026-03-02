@@ -63,56 +63,40 @@ const HomeModule = {
 
     // ==================== Smart Input Detection ====================
 
-    /**
-     * Detect if user input is about food, training, or unknown
-     * @returns 'food' | 'training' | 'unknown'
-     */
     detectInputType(message) {
         const lower = message.toLowerCase();
 
-        // ---- Priority 1: Explicit training patterns ----
-        // Has kg → almost always training context
         if (/\d+\s*[kK][gG]/.test(message)) return 'training';
-        // Weight × sets pattern
         if (/\d+\s*[x×]\s*\d+/.test(message)) return 'training';
-        // 自重 + sets
         if (/自重/.test(message)) return 'training';
-        // 组 or 次 with numbers
         if (/\d+\s*组/.test(message) || /\d+\s*次/.test(message)) return 'training';
 
-        // ---- Priority 2: Explicit food patterns ----
-        // Has grams notation (but NOT preceded by 'k', to exclude 'kg')
         if (/\d+\s*[gG克]/.test(message) && !/[kK][gG]/.test(message)) {
             return 'food';
         }
 
-        // ---- Priority 3: Keyword scoring ----
         let foodScore = 0;
         let trainingScore = 0;
 
-        // Use word-boundary-aware matching to avoid partial matches
         this.FOOD_KEYWORDS.forEach(k => {
             const kl = k.toLowerCase();
-            // Skip single-char 'g' — already handled by regex above
             if (kl === 'g') return;
             if (lower.includes(kl)) foodScore++;
         });
         this.TRAINING_KEYWORDS.forEach(k => {
             const kl = k.toLowerCase();
-            // Skip 'kg' — already handled by regex above
             if (kl === 'kg') return;
             if (lower.includes(kl)) trainingScore++;
         });
 
-        // Clear winner
         if (trainingScore > 0 && foodScore === 0) return 'training';
         if (foodScore > 0 && trainingScore === 0) return 'food';
         if (trainingScore >= foodScore + 1) return 'training';
         if (foodScore >= trainingScore + 1) return 'food';
 
-        // Ambiguous
         return 'unknown';
     },
+
     // ==================== Chat Interface ====================
 
     handleUserInput() {
@@ -143,7 +127,6 @@ const HomeModule = {
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        // Save to unified chat history
         if (saveToHistory && type !== 'system') {
             Storage.addChatMessage({ content, type, status });
         }
@@ -153,7 +136,6 @@ const HomeModule = {
         const chatMessages = document.getElementById('homeChatMessages');
         if (!chatMessages) return;
 
-        // Keep only the welcome message
         const welcome = chatMessages.querySelector('.system-message');
         chatMessages.innerHTML = '';
         if (welcome) chatMessages.appendChild(welcome);
@@ -191,7 +173,6 @@ const HomeModule = {
     processMessage(message) {
         const lower = message.toLowerCase();
 
-        // Special commands first
         if (lower.includes('体重')) { this.handleWeightInput(message); return; }
         if (lower === '汇总' || lower === '总结') { this.showSummary(); return; }
         if (lower === '帮助' || lower === 'help') { this.showHelp(); return; }
@@ -199,20 +180,17 @@ const HomeModule = {
         if (lower === '力训日' || lower === '训练日') { this.setDayType('training'); return; }
         if (lower === '休息日') { this.setDayType('rest'); return; }
 
-        // Duration command
         const durationMatch = message.match(/训练时长\s*[:：]?\s*(\d+)\s*(分钟|min|m)?/i);
         if (durationMatch) {
             this.setDuration(parseInt(durationMatch[1]));
             return;
         }
 
-        // Auto-detect input type
         const inputType = this.detectInputType(message);
 
         if (inputType === 'food') {
             this.handleFoodInput(message);
         } else if (inputType === 'training') {
-            // Try local training parse first
             const parsed = this.tryLocalTrainingParse(message);
             if (parsed) {
                 this.addTrainingExercise(parsed);
@@ -220,7 +198,6 @@ const HomeModule = {
                 this.handleAITrainingInput(message);
             }
         } else {
-            // Unknown — let AI decide
             this.handleAISmartInput(message);
         }
     },
@@ -271,9 +248,9 @@ const HomeModule = {
             const result = API.parseJSONResponse(aiResponse);
 
             if (result.type === 'food') {
-                this.processAIFoodResult(result);
+                await this.processAIFoodResult(result);
             } else if (result.type === 'training') {
-                this.processAITrainingResult(result);
+                await this.processAITrainingResult(result);
             } else {
                 this.addMessage(`🤔 ${result.error || '无法判断输入类型，请尝试更具体的描述'}`, 'bot', 'error');
             }
@@ -283,7 +260,7 @@ const HomeModule = {
         this.isProcessing = false;
     },
 
-    processAIFoodResult(result) {
+    async processAIFoodResult(result) {
         const items = result.items || [];
         if (items.length === 0) {
             this.addMessage('❌ 未能识别到食物信息，请重新描述', 'bot', 'error');
@@ -291,7 +268,7 @@ const HomeModule = {
         }
 
         let parts = [];
-        items.forEach(item => {
+        for (const item of items) {
             const nutrition = {
                 name: item.food_name,
                 grams: item.grams,
@@ -300,9 +277,9 @@ const HomeModule = {
                 carbs: Math.round(item.per_100g.carbs * item.grams / 100 * 10) / 10,
                 fat: Math.round(item.per_100g.fat * item.grams / 100 * 10) / 10
             };
-            Storage.addFood(this.currentDate, nutrition);
+            await Storage.addFood(this.currentDate, nutrition);
             parts.push(`• <strong>${nutrition.name}</strong> ${nutrition.grams}g — 🔥${nutrition.calories}kcal 🥩${nutrition.protein}g`);
-        });
+        }
 
         this.updateQuickStats();
         this.addMessage(
@@ -311,7 +288,7 @@ const HomeModule = {
         );
     },
 
-    processAITrainingResult(result) {
+    async processAITrainingResult(result) {
         const exercises = result.exercises || [];
         if (exercises.length === 0) {
             this.addMessage('❌ 未能识别到训练动作，请重新描述', 'bot', 'error');
@@ -319,15 +296,15 @@ const HomeModule = {
         }
 
         if (result.duration) {
-            Storage.setTrainingDuration(this.currentDate, result.duration);
+            await Storage.setTrainingDuration(this.currentDate, result.duration);
         }
 
         // Pre-fetch day data for merge detection
-        const dayData = Storage.getTrainingByDate(this.currentDate);
+        const dayData = await Storage.getTrainingByDate(this.currentDate);
         const existingNames = new Set(dayData.exercises.map(e => e.name.trim().toLowerCase()));
 
         let parts = [];
-        exercises.forEach(ex => {
+        for (const ex of exercises) {
             const volume = ex.weight * ex.sets * ex.reps;
             const exercise = {
                 name: ex.name,
@@ -338,8 +315,7 @@ const HomeModule = {
                 setDetails: ex.set_details || this.generateSetDetails(ex.weight, ex.sets, ex.reps)
             };
             const wasMerged = existingNames.has(ex.name.trim().toLowerCase());
-            const saved = Storage.addTrainingExercise(this.currentDate, exercise);
-            // After first add, this name now exists for subsequent items
+            const saved = await Storage.addTrainingExercise(this.currentDate, exercise);
             existingNames.add(ex.name.trim().toLowerCase());
 
             const w = ex.weight > 0 ? `${ex.weight}kg` : '自重';
@@ -348,7 +324,7 @@ const HomeModule = {
             } else {
                 parts.push(`• <strong>${ex.name}</strong> ${w} ${ex.sets}组×${ex.reps}次 (${volume}kg)`);
             }
-        });
+        }
 
         this.updateQuickStats();
         let msg = `✅ <span class="ai-badge">AI</span> 🏋️ 已记录 ${exercises.length} 个动作：<br>` + parts.join('<br>');
@@ -359,12 +335,10 @@ const HomeModule = {
     // ==================== Food Input Processing ====================
 
     async handleFoodInput(message) {
-        // Match "food name + grams" pattern, require explicit g/G/克 suffix to avoid matching kg numbers
         const regex = /(.+?)\s*(\d+(?:\.\d+)?)\s*[gG克]$/;
         const match = message.match(regex);
 
         if (!match) {
-            // No simple pattern match, use AI
             await this.handleAIFoodInput(message);
             return;
         }
@@ -380,7 +354,7 @@ const HomeModule = {
         }
 
         const nutrition = calculateNutrition(foodData, grams);
-        Storage.addFood(this.currentDate, nutrition);
+        await Storage.addFood(this.currentDate, nutrition);
         this.updateQuickStats();
 
         this.addMessage(
@@ -411,7 +385,6 @@ const HomeModule = {
             const result = API.parseJSONResponse(aiResponse);
 
             if (!result.success) {
-                // If AI says this is training content, redirect to training handler
                 if (result.is_training) {
                     this.isProcessing = false;
                     this.handleAITrainingInput(message);
@@ -430,7 +403,7 @@ const HomeModule = {
             }
 
             let parts = [];
-            items.forEach(item => {
+            for (const item of items) {
                 const nutrition = {
                     name: item.food_name,
                     grams: item.grams,
@@ -439,9 +412,9 @@ const HomeModule = {
                     carbs: Math.round(item.per_100g.carbs * item.grams / 100 * 10) / 10,
                     fat: Math.round(item.per_100g.fat * item.grams / 100 * 10) / 10
                 };
-                Storage.addFood(this.currentDate, nutrition);
+                await Storage.addFood(this.currentDate, nutrition);
                 parts.push(`• <strong>${nutrition.name}</strong> ${nutrition.grams}g — 🔥${nutrition.calories}kcal 🥩${nutrition.protein}g`);
-            });
+            }
 
             this.updateQuickStats();
             this.addMessage(
@@ -486,7 +459,7 @@ const HomeModule = {
                 fat: Math.round(result.per_100g.fat * grams / 100 * 10) / 10
             };
 
-            Storage.addFood(this.currentDate, nutrition);
+            await Storage.addFood(this.currentDate, nutrition);
             this.updateQuickStats();
 
             this.addMessage(
@@ -542,7 +515,7 @@ const HomeModule = {
         return details;
     },
 
-    addTrainingExercise(parsed) {
+    async addTrainingExercise(parsed) {
         const volume = parsed.weight * parsed.sets * parsed.reps;
         const exercise = {
             name: parsed.name,
@@ -553,17 +526,15 @@ const HomeModule = {
             setDetails: parsed.setDetails || []
         };
 
-        // Check if this exercise already exists today (merge detection)
-        const dayData = Storage.getTrainingByDate(this.currentDate);
+        const dayData = await Storage.getTrainingByDate(this.currentDate);
         const normalizedName = parsed.name.trim().toLowerCase();
         const existsBefore = dayData.exercises.some(e => e.name.trim().toLowerCase() === normalizedName);
 
-        const result = Storage.addTrainingExercise(this.currentDate, exercise);
+        const result = await Storage.addTrainingExercise(this.currentDate, exercise);
         this.updateQuickStats();
 
         const weightStr = parsed.weight > 0 ? `${parsed.weight}kg` : '自重';
         if (existsBefore) {
-            // Merged into existing exercise
             this.addMessage(
                 `✅ 🏋️ 已合并到：<strong>${parsed.name}</strong><br>` +
                 `➕ 新增 ${parsed.sets}组 (${weightStr}×${parsed.reps}) · 当前共 ${result.sets}组 · 总容量 ${result.volume}kg`,
@@ -624,7 +595,7 @@ const HomeModule = {
                 return;
             }
 
-            this.processAITrainingResult(result);
+            await this.processAITrainingResult(result);
         } catch (error) {
             this.addMessage(`❌ AI服务暂时不可用，请稍后重试<br><small>${error.message}</small>`, 'bot', 'error');
         }
@@ -633,7 +604,7 @@ const HomeModule = {
 
     // ==================== Commands ====================
 
-    handleWeightInput(message) {
+    async handleWeightInput(message) {
         const regex = /体重\s*[:：]?\s*(\d+(?:\.\d+)?)\s*[kK]?[gG]?/;
         const match = message.match(regex);
 
@@ -648,9 +619,9 @@ const HomeModule = {
             return;
         }
 
-        Storage.addWeightRecord(this.currentDate, weight);
+        await Storage.addWeightRecord(this.currentDate, weight);
 
-        const weightRecords = Storage.getWeightRecords();
+        const weightRecords = await Storage.getWeightRecords();
         let comparison = '';
         if (weightRecords.length >= 2) {
             const prevRecord = weightRecords[weightRecords.length - 2];
@@ -663,31 +634,30 @@ const HomeModule = {
         this.addMessage(`✅ ⚖️ 已记录体重：<strong>${weight}kg</strong> (${this.currentDate})${comparison}`, 'bot', 'success');
     },
 
-    setDayType(type) {
-        Storage.setDayType(this.currentDate, type);
+    async setDayType(type) {
+        await Storage.setDayType(this.currentDate, type);
         const typeName = type === 'training' ? '力训日' : '休息日';
         this.addMessage(`✅ 已将今天设置为：<strong>${typeName}</strong>`, 'bot', 'success');
     },
 
-    setDuration(minutes) {
+    async setDuration(minutes) {
         if (minutes < 1 || minutes > 600) {
             this.addMessage('❌ 训练时长不合理，请输入1-600分钟之间的数值', 'bot', 'error');
             return;
         }
-        Storage.setTrainingDuration(this.currentDate, minutes);
+        await Storage.setTrainingDuration(this.currentDate, minutes);
         this.addMessage(`✅ 已记录训练时长：<strong>${minutes}分钟</strong>`, 'bot', 'success');
     },
 
-    showSummary() {
-        const dietData = Storage.getDietByDate(this.currentDate);
-        const trainingData = Storage.getTrainingByDate(this.currentDate);
-        const weightRecord = Storage.getWeightByDate(this.currentDate);
+    async showSummary() {
+        const dietData = await Storage.getDietByDate(this.currentDate);
+        const trainingData = await Storage.getTrainingByDate(this.currentDate);
+        const weightRecord = await Storage.getWeightByDate(this.currentDate);
         const dayTypeName = dietData.dayType === 'training' ? '力训日' : '休息日';
 
         let html = `<strong>📊 ${this.currentDate} 今日汇总</strong><br>`;
         html += `<strong>类型：</strong>${dayTypeName}<br><br>`;
 
-        // Diet summary
         html += `<strong>🍎 饮食摄入：</strong><br>`;
         html += `🔥 热量：${dietData.totals.calories} kcal<br>`;
         html += `🥩 蛋白质：${dietData.totals.protein} g<br>`;
@@ -697,7 +667,6 @@ const HomeModule = {
             html += `食物：${dietData.foods.map(f => `${f.name} ${f.grams}g`).join('、')}<br>`;
         }
 
-        // Training summary
         const exercises = trainingData.exercises || [];
         if (exercises.length > 0) {
             let totalVolume = 0;

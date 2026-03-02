@@ -20,7 +20,6 @@ const FoodModule = {
     },
 
     destroy() {
-        // Destroy chart instances to free memory
         if (this.charts) {
             Object.values(this.charts).forEach(chart => {
                 if (chart) chart.destroy();
@@ -45,8 +44,8 @@ const FoodModule = {
 
         const dayType = document.getElementById('dayType');
         if (dayType) {
-            dayType.addEventListener('change', (e) => {
-                Storage.setDayType(this.currentDate, e.target.value);
+            dayType.addEventListener('change', async (e) => {
+                await Storage.setDayType(this.currentDate, e.target.value);
             });
         }
 
@@ -61,8 +60,8 @@ const FoodModule = {
         if (el) el.value = this.currentDate;
     },
 
-    loadDayData() {
-        const dayData = Storage.getDietByDate(this.currentDate);
+    async loadDayData() {
+        const dayData = await Storage.getDietByDate(this.currentDate);
         const dayTypeEl = document.getElementById('dayType');
         if (dayTypeEl) dayTypeEl.value = dayData.dayType;
         this.updateTotals(dayData.totals);
@@ -228,8 +227,8 @@ const FoodModule = {
         }
 
         const nutrition = calculateNutrition(foodData, grams);
-        Storage.addFood(this.currentDate, nutrition);
-        this.loadDayData();
+        await Storage.addFood(this.currentDate, nutrition);
+        await this.loadDayData();
 
         this.addMessage(
             `✅ 已添加：<strong>${nutrition.name}</strong> ${grams}g<br>` +
@@ -270,8 +269,8 @@ const FoodModule = {
                 fat: Math.round(result.per_100g.fat * result.grams / 100 * 10) / 10
             };
 
-            Storage.addFood(this.currentDate, nutrition);
-            this.loadDayData();
+            await Storage.addFood(this.currentDate, nutrition);
+            await this.loadDayData();
 
             this.addMessage(
                 `✅ <span class="ai-badge">AI</span> 已添加：<strong>${nutrition.name}</strong> ${nutrition.grams}g<br>` +
@@ -316,8 +315,8 @@ const FoodModule = {
                 fat: Math.round(result.per_100g.fat * grams / 100 * 10) / 10
             };
 
-            Storage.addFood(this.currentDate, nutrition);
-            this.loadDayData();
+            await Storage.addFood(this.currentDate, nutrition);
+            await this.loadDayData();
 
             this.addMessage(
                 `✅ <span class="ai-badge">AI</span> 已添加：<strong>${nutrition.name}</strong> ${grams}g<br>` +
@@ -330,7 +329,7 @@ const FoodModule = {
         this.isProcessing = false;
     },
 
-    handleWeightInput(message) {
+    async handleWeightInput(message) {
         const regex = /体重\s*[:：]?\s*(\d+(?:\.\d+)?)\s*[kK]?[gG]?/;
         const match = message.match(regex);
 
@@ -345,9 +344,9 @@ const FoodModule = {
             return;
         }
 
-        Storage.addWeightRecord(this.currentDate, weight);
+        await Storage.addWeightRecord(this.currentDate, weight);
 
-        const weightRecords = Storage.getWeightRecords();
+        const weightRecords = await Storage.getWeightRecords();
         let comparison = '';
         if (weightRecords.length >= 2) {
             const prevRecord = weightRecords[weightRecords.length - 2];
@@ -360,17 +359,17 @@ const FoodModule = {
         this.addMessage(`✅ 已记录体重：<strong>${weight}kg</strong> (${this.currentDate})${comparison}`, 'bot', 'success');
     },
 
-    setDayType(type) {
-        Storage.setDayType(this.currentDate, type);
+    async setDayType(type) {
+        await Storage.setDayType(this.currentDate, type);
         const el = document.getElementById('dayType');
         if (el) el.value = type;
         const typeName = type === 'training' ? '力训日' : '休息日';
         this.addMessage(`✅ 已将今天设置为：<strong>${typeName}</strong>`, 'bot', 'success');
     },
 
-    showSummary() {
-        const dayData = Storage.getDietByDate(this.currentDate);
-        const weightRecord = Storage.getWeightByDate(this.currentDate);
+    async showSummary() {
+        const dayData = await Storage.getDietByDate(this.currentDate);
+        const weightRecord = await Storage.getWeightByDate(this.currentDate);
         const dayTypeName = dayData.dayType === 'training' ? '力训日' : '休息日';
 
         let summaryHtml = `
@@ -406,9 +405,9 @@ const FoodModule = {
         );
     },
 
-    deleteFood(foodId) {
-        Storage.removeFood(this.currentDate, foodId);
-        this.loadDayData();
+    async deleteFood(foodId) {
+        await Storage.removeFood(this.currentDate, foodId);
+        await this.loadDayData();
         this.addMessage('✅ 已删除该食物记录', 'bot', 'success');
     },
 
@@ -430,7 +429,6 @@ const FoodModule = {
         } else {
             trainingCard?.classList.add('hidden');
             restCard?.classList.remove('hidden');
-            // Lazy-init rest chart on first toggle
             if (!this.charts.rest) {
                 this._createRestChart();
                 this._updateRestChartData();
@@ -485,15 +483,13 @@ const FoodModule = {
         Chart.defaults.borderColor = '#e8ecf0';
         Chart.defaults.font.family = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
-        // Only init training chart eagerly (it's visible by default)
         this.charts.training = this._createBarChart('foodTrainingDayChart');
-        // Rest chart is lazy-initialized on first toggle
         this.charts.rest = null;
     },
 
-    _updateRestChartData() {
+    async _updateRestChartData() {
         if (!this.charts.rest) return;
-        const restRecords = Storage.getRecentDietRecords('rest', 7);
+        const restRecords = await Storage.getRecentDietRecords('rest', 7);
         this.charts.rest.data.labels = restRecords.map(r => r.date.slice(5));
         this.charts.rest.data.datasets[0].data = restRecords.map(r => r.totals.protein);
         this.charts.rest.data.datasets[1].data = restRecords.map(r => r.totals.carbs);
@@ -501,10 +497,9 @@ const FoodModule = {
         this.charts.rest.update();
     },
 
-    updateCharts() {
-        // Training day chart (always visible)
+    async updateCharts() {
         if (this.charts.training) {
-            const trainingRecords = Storage.getRecentDietRecords('training', 7);
+            const trainingRecords = await Storage.getRecentDietRecords('training', 7);
             this.charts.training.data.labels = trainingRecords.map(r => r.date.slice(5));
             this.charts.training.data.datasets[0].data = trainingRecords.map(r => r.totals.protein);
             this.charts.training.data.datasets[1].data = trainingRecords.map(r => r.totals.carbs);
@@ -512,8 +507,7 @@ const FoodModule = {
             this.charts.training.update();
         }
 
-        // Rest day chart — only update if already initialized
-        this._updateRestChartData();
+        await this._updateRestChartData();
     }
 };
 

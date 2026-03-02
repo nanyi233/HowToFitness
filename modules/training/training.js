@@ -19,7 +19,6 @@ const TrainingModule = {
     },
 
     destroy() {
-        // Destroy chart instances to free memory
         if (this.charts) {
             Object.values(this.charts).forEach(chart => {
                 if (chart) chart.destroy();
@@ -55,8 +54,8 @@ const TrainingModule = {
 
     // ==================== Data Loading ====================
 
-    loadDayData() {
-        const dayData = Storage.getTrainingByDate(this.currentDate);
+    async loadDayData() {
+        const dayData = await Storage.getTrainingByDate(this.currentDate);
         this.updateSummary(dayData);
         this.renderExerciseList(dayData.exercises);
     },
@@ -93,7 +92,6 @@ const TrainingModule = {
             return;
         }
 
-        // Find max volume for bar scaling
         const maxVolume = Math.max(...exercises.map(e => e.volume || 0), 1);
 
         list.innerHTML = exercises.map(ex => {
@@ -103,7 +101,6 @@ const TrainingModule = {
 
             const volumePercent = maxVolume > 0 ? Math.round((ex.volume / maxVolume) * 100) : 0;
 
-            // Show weight range if sets have different weights
             const weights = ex.setDetails ? [...new Set(ex.setDetails.map(s => s.weight))] : [ex.weight];
             const weightDisplay = weights.length > 1
                 ? `${Math.min(...weights)}-${Math.max(...weights)}kg`
@@ -202,36 +199,25 @@ const TrainingModule = {
         if (lower === '帮助' || lower === 'help') { this.showHelp(); return; }
         if (lower === '清除记录' || lower === '清除聊天' || lower === '清空聊天') { this.clearChatHistory(); return; }
 
-        // Duration input
         const durationMatch = message.match(/训练时长\s*[:：]?\s*(\d+)\s*(分钟|min|m)?/i);
         if (durationMatch) {
             this.setDuration(parseInt(durationMatch[1]));
             return;
         }
 
-        // Try local parsing first
         const parsed = this.tryLocalParse(message);
         if (parsed) {
             this.addExercise(parsed);
             return;
         }
 
-        // Fallback to AI parsing
         this.handleAITrainingInput(message);
     },
 
-    /**
-     * Try to parse common patterns locally without AI
-     * Patterns: "卧推 60kg 4组8个", "深蹲 80kg 5x5", "引体向上 自重 3组10个"
-     */
     tryLocalParse(message) {
-        // Pattern: 动作名 重量kg 组数x次数 or 组数组次数个
         const patterns = [
-            // "卧推 60kg 4组8个" or "卧推 60kg 4组8次"
             /^(.+?)\s+(\d+(?:\.\d+)?)\s*[kK][gG]\s+(\d+)\s*[组x×]\s*(\d+)\s*[个次reps]?$/,
-            // "卧推 60 4x8"
             /^(.+?)\s+(\d+(?:\.\d+)?)\s+(\d+)\s*[x×]\s*(\d+)$/,
-            // "引体向上 自重 3组10个"
             /^(.+?)\s+自重\s+(\d+)\s*[组x×]\s*(\d+)\s*[个次reps]?$/,
         ];
 
@@ -239,7 +225,6 @@ const TrainingModule = {
             const match = message.match(patterns[i]);
             if (match) {
                 if (i === 2) {
-                    // Bodyweight pattern
                     return {
                         name: match[1].trim(),
                         weight: 0,
@@ -270,7 +255,7 @@ const TrainingModule = {
         return details;
     },
 
-    addExercise(parsed) {
+    async addExercise(parsed) {
         const volume = parsed.weight * parsed.sets * parsed.reps;
         const exercise = {
             name: parsed.name,
@@ -282,12 +267,12 @@ const TrainingModule = {
         };
 
         // Check if this exercise already exists today (merge detection)
-        const dayData = Storage.getTrainingByDate(this.currentDate);
+        const dayData = await Storage.getTrainingByDate(this.currentDate);
         const normalizedName = parsed.name.trim().toLowerCase();
         const existsBefore = dayData.exercises.some(e => e.name.trim().toLowerCase() === normalizedName);
 
-        const result = Storage.addTrainingExercise(this.currentDate, exercise);
-        this.loadDayData();
+        const result = await Storage.addTrainingExercise(this.currentDate, exercise);
+        await this.loadDayData();
 
         const weightStr = parsed.weight > 0 ? `${parsed.weight}kg` : '自重';
         if (existsBefore) {
@@ -354,12 +339,10 @@ const TrainingModule = {
                 return;
             }
 
-            // Process duration if provided
             if (result.duration) {
-                Storage.setTrainingDuration(this.currentDate, result.duration);
+                await Storage.setTrainingDuration(this.currentDate, result.duration);
             }
 
-            // Process each exercise
             const exercises = result.exercises || [];
             if (exercises.length === 0) {
                 this.addMessage('❌ 未能识别到训练动作，请重新描述', 'bot', 'error');
@@ -368,11 +351,11 @@ const TrainingModule = {
             }
 
             // Pre-fetch day data for merge detection
-            const dayData = Storage.getTrainingByDate(this.currentDate);
+            const dayData = await Storage.getTrainingByDate(this.currentDate);
             const existingNames = new Set(dayData.exercises.map(e => e.name.trim().toLowerCase()));
 
             let summaryParts = [];
-            exercises.forEach(ex => {
+            for (const ex of exercises) {
                 const volume = ex.weight * ex.sets * ex.reps;
                 const exercise = {
                     name: ex.name,
@@ -383,7 +366,7 @@ const TrainingModule = {
                     setDetails: ex.set_details || this.generateSetDetails(ex.weight, ex.sets, ex.reps)
                 };
                 const wasMerged = existingNames.has(ex.name.trim().toLowerCase());
-                const saved = Storage.addTrainingExercise(this.currentDate, exercise);
+                const saved = await Storage.addTrainingExercise(this.currentDate, exercise);
                 existingNames.add(ex.name.trim().toLowerCase());
 
                 const weightStr = ex.weight > 0 ? `${ex.weight}kg` : '自重';
@@ -392,9 +375,9 @@ const TrainingModule = {
                 } else {
                     summaryParts.push(`• <strong>${ex.name}</strong> ${weightStr} ${ex.sets}组×${ex.reps}次 (容量${volume}kg)`);
                 }
-            });
+            }
 
-            this.loadDayData();
+            await this.loadDayData();
 
             let msg = `✅ <span class="ai-badge">AI</span> 已添加 ${exercises.length} 个动作：<br>` + summaryParts.join('<br>');
             if (result.duration) {
@@ -410,18 +393,18 @@ const TrainingModule = {
 
     // ==================== Commands ====================
 
-    setDuration(minutes) {
+    async setDuration(minutes) {
         if (minutes < 1 || minutes > 600) {
             this.addMessage('❌ 训练时长不合理，请输入1-600分钟之间的数值', 'bot', 'error');
             return;
         }
-        Storage.setTrainingDuration(this.currentDate, minutes);
-        this.loadDayData();
+        await Storage.setTrainingDuration(this.currentDate, minutes);
+        await this.loadDayData();
         this.addMessage(`✅ 已记录训练时长：<strong>${minutes}分钟</strong>`, 'bot', 'success');
     },
 
-    showSummary() {
-        const dayData = Storage.getTrainingByDate(this.currentDate);
+    async showSummary() {
+        const dayData = await Storage.getTrainingByDate(this.currentDate);
         const exercises = dayData.exercises || [];
 
         let totalSets = 0;
@@ -475,9 +458,9 @@ const TrainingModule = {
         this.addMessage('✅ 聊天记录已清除', 'bot', 'success', false);
     },
 
-    deleteExercise(exerciseId) {
-        Storage.removeTrainingExercise(this.currentDate, exerciseId);
-        this.loadDayData();
+    async deleteExercise(exerciseId) {
+        await Storage.removeTrainingExercise(this.currentDate, exerciseId);
+        await this.loadDayData();
         this.addMessage('✅ 已删除该训练记录', 'bot', 'success');
     },
 
@@ -499,7 +482,6 @@ const TrainingModule = {
         } else {
             intensityCard?.classList.add('hidden');
             volumeCard?.classList.remove('hidden');
-            // Lazy-init volume chart on first toggle
             if (!this.charts.volume) {
                 this._createVolumeChart();
                 this._updateVolumeChartData();
@@ -557,7 +539,6 @@ const TrainingModule = {
 
         const opts = this._getChartOptions();
 
-        // Only init intensity chart eagerly (it's visible by default)
         const intensityCtx = document.getElementById('trainingIntensityChart')?.getContext('2d');
         if (intensityCtx) {
             this.charts.intensity = new Chart(intensityCtx, {
@@ -592,29 +573,26 @@ const TrainingModule = {
             });
         }
 
-        // Volume chart is lazy-initialized on first toggle
         this.charts.volume = null;
     },
 
-    _updateVolumeChartData() {
+    async _updateVolumeChartData() {
         if (!this.charts.volume) return;
-        const trainingData = Storage.getRecentTrainingRecords(14);
+        const trainingData = await Storage.getRecentTrainingRecords(14);
         this.charts.volume.data.labels = trainingData.map(r => r.date.slice(5));
         this.charts.volume.data.datasets[0].data = trainingData.map(r => r.totalVolume || 0);
         this.charts.volume.update();
     },
 
-    updateCharts() {
-        // Training Intensity chart (always visible)
+    async updateCharts() {
         if (this.charts.intensity) {
-            const trainingData = Storage.getRecentTrainingRecords(14);
+            const trainingData = await Storage.getRecentTrainingRecords(14);
             this.charts.intensity.data.labels = trainingData.map(r => r.date.slice(5));
             this.charts.intensity.data.datasets[0].data = trainingData.map(r => r.maxIntensity || 0);
             this.charts.intensity.update();
         }
 
-        // Volume chart — only update if already initialized
-        this._updateVolumeChartData();
+        await this._updateVolumeChartData();
     }
 };
 

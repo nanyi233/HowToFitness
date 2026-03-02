@@ -62,9 +62,9 @@ const ProfileModule = {
         this.planSectionOpen = false;
     },
 
-    updateProfileStats() {
+    async updateProfileStats() {
         // Streak
-        const records = Storage.getDietRecords();
+        const records = await Storage.getDietRecords();
         let streak = 0;
         const today = new Date();
         for (let i = 0; i < 365; i++) {
@@ -81,7 +81,7 @@ const ProfileModule = {
         if (streakEl) streakEl.textContent = streak > 0 ? `${streak} Days` : '0';
 
         // Latest weight
-        const weightRecords = Storage.getWeightRecords();
+        const weightRecords = await Storage.getWeightRecords();
         const profileWeightEl = document.getElementById('profileWeight');
         if (weightRecords.length > 0) {
             const latest = weightRecords[weightRecords.length - 1];
@@ -94,7 +94,7 @@ const ProfileModule = {
         const bmiEl = document.getElementById('profileBMI');
         if (bmiEl && weightRecords.length > 0) {
             const w = weightRecords[weightRecords.length - 1].weight;
-            const h = 1.75; // default height
+            const h = 1.75;
             bmiEl.textContent = (w / (h * h)).toFixed(1);
         }
     },
@@ -119,7 +119,7 @@ const ProfileModule = {
         }
     },
 
-    initWeightChart() {
+    async initWeightChart() {
         const ctx = document.getElementById('profileWeightChart')?.getContext('2d');
         if (!ctx) return;
 
@@ -133,7 +133,7 @@ const ProfileModule = {
         };
         const gridOpts = { color: 'rgba(0,0,0,0.04)' };
 
-        const weightRecords = Storage.getRecentWeightRecords(30);
+        const weightRecords = await Storage.getRecentWeightRecords(30);
 
         this.weightChart = new Chart(ctx, {
             type: 'line',
@@ -169,11 +169,11 @@ const ProfileModule = {
         });
     },
 
-    renderWeightRecords() {
+    async renderWeightRecords() {
         const container = document.getElementById('profileWeightRecords');
         if (!container) return;
 
-        const records = Storage.getRecentWeightRecords(10);
+        const records = await Storage.getRecentWeightRecords(10);
         if (records.length === 0) {
             container.innerHTML = '<p class="empty-message" style="margin-top:8px;">暂无体重记录</p>';
             return;
@@ -198,7 +198,7 @@ const ProfileModule = {
         }).join('');
     },
 
-    addWeight() {
+    async addWeight() {
         const input = document.getElementById('profileWeightInput');
         if (!input) return;
 
@@ -209,12 +209,12 @@ const ProfileModule = {
         }
 
         const today = Utils.formatDate(new Date());
-        Storage.addWeightRecord(today, weight);
+        await Storage.addWeightRecord(today, weight);
 
         input.value = '';
-        this.updateProfileStats();
-        this.initWeightChart();
-        this.renderWeightRecords();
+        await this.updateProfileStats();
+        await this.initWeightChart();
+        await this.renderWeightRecords();
     },
 
     // ==================== Aerobic Calculator ====================
@@ -249,7 +249,6 @@ const ProfileModule = {
             categorySelect.appendChild(option);
         }
 
-        // Attach event listeners
         categorySelect.addEventListener('change', (e) => {
             this.populateLevels(e.target.value);
             this.saveAerobicData();
@@ -480,7 +479,6 @@ const ProfileModule = {
         const r = this.planResults;
         const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-        // BMI
         const bmiEl = document.getElementById('resultBMI');
         const bmiStatusEl = document.getElementById('bmiStatus');
         if (bmiEl) bmiEl.textContent = r.bmi.toFixed(1);

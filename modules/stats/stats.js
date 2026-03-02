@@ -12,7 +12,6 @@ const StatsModule = {
     },
 
     destroy() {
-        // Destroy chart instances to free memory
         Object.values(this.charts).forEach(chart => {
             if (chart) chart.destroy();
         });
@@ -35,7 +34,6 @@ const StatsModule = {
         const intensityCard = document.getElementById('intensityCard');
         const volumeCard = document.getElementById('volumeCard');
 
-        // Hide all
         [weightCard, trainingCard, restCard, intensityCard, volumeCard].forEach(c => {
             if (c) c.classList.add('hidden');
         });
@@ -107,41 +105,29 @@ const StatsModule = {
                 type: 'line',
                 data: {
                     labels: [],
-                    datasets: [
-                        {
-                            label: '最大重量 (kg)',
-                            data: [],
-                            fill: true,
-                            backgroundColor: 'rgba(231,76,60,0.08)',
-                            borderColor: '#e74c3c',
-                            borderWidth: 2.5,
-                            tension: 0.35,
-                            pointBackgroundColor: '#e74c3c',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
-                        }
-                    ]
+                    datasets: [{
+                        label: '最大重量 (kg)',
+                        data: [],
+                        fill: true,
+                        backgroundColor: 'rgba(231,76,60,0.08)',
+                        borderColor: '#e74c3c',
+                        borderWidth: 2.5,
+                        tension: 0.35,
+                        pointBackgroundColor: '#e74c3c',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
                     scales: {
-                        x: {
-                            grid: gridOpts,
-                            title: { display: true, text: '日期', color: '#6b7b8d', font: { size: 11 } }
-                        },
-                        y: {
-                            beginAtZero: false,
-                            grid: gridOpts,
-                            title: { display: true, text: '最大重量 (kg)', color: '#e74c3c', font: { size: 11 } }
-                        }
+                        x: { grid: gridOpts, title: { display: true, text: '日期', color: '#6b7b8d', font: { size: 11 } } },
+                        y: { beginAtZero: false, grid: gridOpts, title: { display: true, text: '最大重量 (kg)', color: '#e74c3c', font: { size: 11 } } }
                     },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: chartTooltip
-                    }
+                    plugins: { legend: { display: false }, tooltip: chartTooltip }
                 }
             });
         }
@@ -153,44 +139,32 @@ const StatsModule = {
                 type: 'bar',
                 data: {
                     labels: [],
-                    datasets: [
-                        {
-                            label: '训练容量 (kg)',
-                            data: [],
-                            backgroundColor: 'rgba(155,89,182,0.7)',
-                            borderColor: '#9b59b6',
-                            borderWidth: 1,
-                            borderRadius: 6
-                        }
-                    ]
+                    datasets: [{
+                        label: '训练容量 (kg)',
+                        data: [],
+                        backgroundColor: 'rgba(155,89,182,0.7)',
+                        borderColor: '#9b59b6',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
                     scales: {
-                        x: {
-                            grid: gridOpts,
-                            title: { display: true, text: '日期', color: '#6b7b8d', font: { size: 11 } }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: gridOpts,
-                            title: { display: true, text: '训练容量 (kg)', color: '#9b59b6', font: { size: 11 } }
-                        }
+                        x: { grid: gridOpts, title: { display: true, text: '日期', color: '#6b7b8d', font: { size: 11 } } },
+                        y: { beginAtZero: true, grid: gridOpts, title: { display: true, text: '训练容量 (kg)', color: '#9b59b6', font: { size: 11 } } }
                     },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: chartTooltip
-                    }
+                    plugins: { legend: { display: false }, tooltip: chartTooltip }
                 }
             });
         }
     },
 
-    updateCharts() {
+    async updateCharts() {
         // Training day chart
         if (this.charts.training) {
-            const trainingRecords = Storage.getRecentDietRecords('training', 7);
+            const trainingRecords = await Storage.getRecentDietRecords('training', 7);
             this.charts.training.data.labels = trainingRecords.map(r => r.date.slice(5));
             this.charts.training.data.datasets[0].data = trainingRecords.map(r => r.totals.protein);
             this.charts.training.data.datasets[1].data = trainingRecords.map(r => r.totals.carbs);
@@ -200,7 +174,7 @@ const StatsModule = {
 
         // Rest day chart
         if (this.charts.rest) {
-            const restRecords = Storage.getRecentDietRecords('rest', 7);
+            const restRecords = await Storage.getRecentDietRecords('rest', 7);
             this.charts.rest.data.labels = restRecords.map(r => r.date.slice(5));
             this.charts.rest.data.datasets[0].data = restRecords.map(r => r.totals.protein);
             this.charts.rest.data.datasets[1].data = restRecords.map(r => r.totals.carbs);
@@ -210,7 +184,7 @@ const StatsModule = {
 
         // Weight chart
         if (this.charts.weight) {
-            const weightRecords = Storage.getRecentWeightRecords(30);
+            const weightRecords = await Storage.getRecentWeightRecords(30);
             this.charts.weight.data.labels = weightRecords.map(r => r.date.slice(5));
             this.charts.weight.data.datasets[0].data = weightRecords.map(r => r.weight);
             this.charts.weight.update();
@@ -223,7 +197,7 @@ const StatsModule = {
 
         // Training Intensity chart
         if (this.charts.intensity) {
-            const trainingData = Storage.getRecentTrainingRecords(14);
+            const trainingData = await Storage.getRecentTrainingRecords(14);
             this.charts.intensity.data.labels = trainingData.map(r => r.date.slice(5));
             this.charts.intensity.data.datasets[0].data = trainingData.map(r => r.maxIntensity || 0);
             this.charts.intensity.update();
@@ -231,7 +205,7 @@ const StatsModule = {
 
         // Training Volume chart
         if (this.charts.volume) {
-            const trainingData2 = Storage.getRecentTrainingRecords(14);
+            const trainingData2 = await Storage.getRecentTrainingRecords(14);
             this.charts.volume.data.labels = trainingData2.map(r => r.date.slice(5));
             this.charts.volume.data.datasets[0].data = trainingData2.map(r => r.totalVolume || 0);
             this.charts.volume.update();
